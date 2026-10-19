@@ -100,9 +100,12 @@ export function inboxUrl(email: string | null | undefined): string {
 export const START_EVENT = "hostme:start";
 export const SEARCH_EVENT = "hostme:search";
 export const PREFILL_KEY = "hostme_prefill_email";
+export const OPEN_START_KEY = "hostme_open_start";
 
+/** Ask the homepage to open (and scroll to) the Start a Host form, optionally prefilled. */
 export function requestStartHost(email?: string) {
   if (email) sessionStorage.setItem(PREFILL_KEY, email);
+  sessionStorage.setItem(OPEN_START_KEY, "1");
   window.dispatchEvent(new CustomEvent(START_EVENT, { detail: { email } }));
 }
 
