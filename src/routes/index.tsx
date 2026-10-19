@@ -1,24 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { getHomeHost } from "@/lib/public.functions";
+import { HomeView, HERO_SLOGAN } from "@/components/hostme/HomeView";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+const homeQuery = queryOptions({ queryKey: ["home-host-ssr"], queryFn: () => getHomeHost(), staleTime: 30_000 });
+
 export const Route = createFileRoute("/")({
+  validateSearch: (s: Record<string, unknown>): { ref?: string; src?: string } => ({
+    ref: typeof s.ref === "string" ? s.ref : undefined,
+    src: typeof s.src === "string" ? s.src : undefined,
+  }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
+  head: ({ loaderData }) => {
+    const img = loaderData?.ogImage && /^https:\/\//.test(loaderData.ogImage) ? loaderData.ogImage : "";
+    return {
+      meta: [
+        { title: "Hostme — Share slots, exchange audiences" },
+        { name: "description", content: HERO_SLOGAN },
+        { property: "og:title", content: "Hostme — Share slots, exchange audiences" },
+        { property: "og:description", content: HERO_SLOGAN },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(img
+          ? [
+              { property: "og:image", content: img },
+              { property: "og:image:width", content: "1200" },
+              { property: "og:image:height", content: "675" },
+              { name: "twitter:image", content: img },
+            ]
+          : []),
+      ],
+    };
+  },
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+  const { data } = useSuspenseQuery(homeQuery);
+  const { ref, src } = Route.useSearch();
+  if (!data.host) {
+    return <main className="mx-auto max-w-3xl px-3 py-16 text-center text-muted-foreground">Hostme is getting ready…</main>;
+  }
+  return <HomeView initial={data.host} refId={ref} src={src} />;
 }
