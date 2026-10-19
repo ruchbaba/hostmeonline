@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SlugRouteImport } from './routes/$slug'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as WriteRouteImport } from './routes/write'
 import { Route as ApiPublicBannerSlugRouteImport } from './routes/api/public/banner/$slug'
 import { Route as ApiPublicImgSplatRouteImport } from './routes/api/public/img/$'
 
@@ -22,6 +25,21 @@ const IndexRoute = IndexRouteImport.update({
 const SlugRoute = SlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WriteRoute = WriteRouteImport.update({
+  id: '/write',
+  path: '/write',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicBannerSlugRoute = ApiPublicBannerSlugRouteImport.update({
@@ -38,12 +56,18 @@ const ApiPublicImgSplatRoute = ApiPublicImgSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/auth': typeof AuthRoute
+  '/messages': typeof MessagesRoute
+  '/write': typeof WriteRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
   '/api/public/img/$': typeof ApiPublicImgSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/auth': typeof AuthRoute
+  '/messages': typeof MessagesRoute
+  '/write': typeof WriteRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
   '/api/public/img/$': typeof ApiPublicImgSplatRoute
 }
@@ -51,18 +75,38 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
+  '/auth': typeof AuthRoute
+  '/messages': typeof MessagesRoute
+  '/write': typeof WriteRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
   '/api/public/img/$': typeof ApiPublicImgSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$slug' | '/api/public/banner/$slug' | '/api/public/img/$'
+  fullPaths:
+    | '/'
+    | '/$slug'
+    | '/auth'
+    | '/messages'
+    | '/write'
+    | '/api/public/banner/$slug'
+    | '/api/public/img/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$slug' | '/api/public/banner/$slug' | '/api/public/img/$'
+  to:
+    | '/'
+    | '/$slug'
+    | '/auth'
+    | '/messages'
+    | '/write'
+    | '/api/public/banner/$slug'
+    | '/api/public/img/$'
   id:
     | '__root__'
     | '/'
     | '/$slug'
+    | '/auth'
+    | '/messages'
+    | '/write'
     | '/api/public/banner/$slug'
     | '/api/public/img/$'
   fileRoutesById: FileRoutesById
@@ -70,6 +114,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SlugRoute: typeof SlugRoute
+  AuthRoute: typeof AuthRoute
+  MessagesRoute: typeof MessagesRoute
+  WriteRoute: typeof WriteRoute
   ApiPublicBannerSlugRoute: typeof ApiPublicBannerSlugRoute
   ApiPublicImgSplatRoute: typeof ApiPublicImgSplatRoute
 }
@@ -88,6 +135,27 @@ declare module '@tanstack/react-router' {
       path: '/$slug'
       fullPath: '/$slug'
       preLoaderRoute: typeof SlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/write': {
+      id: '/write'
+      path: '/write'
+      fullPath: '/write'
+      preLoaderRoute: typeof WriteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/banner/$slug': {
@@ -110,6 +178,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SlugRoute: SlugRoute,
+  AuthRoute: AuthRoute,
+  MessagesRoute: MessagesRoute,
+  WriteRoute: WriteRoute,
   ApiPublicBannerSlugRoute: ApiPublicBannerSlugRoute,
   ApiPublicImgSplatRoute: ApiPublicImgSplatRoute,
 }
