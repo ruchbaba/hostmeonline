@@ -20,7 +20,7 @@ export const Route = createFileRoute("/$slug")({
     return res;
   },
   head: ({ loaderData }) => {
-    if (!loaderData || loaderData.kind === "none") {
+    if (!loaderData) {
       return { meta: [{ title: "Unavailable — Hostme" }, { name: "robots", content: "noindex" }] };
     }
     const title = loaderData.kind === "host" ? `${loaderData.host!.name} on Hostme` : `${loaderData.page!.title} — Hostme`;

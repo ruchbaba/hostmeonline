@@ -99,7 +99,7 @@ export function trackImpression(campaignId: string, servedOnHost: string | null,
   if (!s) return;
   void supabase.rpc("track_impression", {
     p_campaign: campaignId,
-    p_host: servedOnHost ?? undefined,
+    p_host: (servedOnHost ?? null) as unknown as string,
     p_context: context,
     p_session: s,
   });
