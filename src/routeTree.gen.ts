@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as ApiPublicBannerSlugRouteImport } from './routes/api/public/banner/$slug'
 import { Route as ApiPublicImgSplatRouteImport } from './routes/api/public/img/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SlugRoute = SlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicBannerSlugRoute = ApiPublicBannerSlugRouteImport.update({
@@ -31,30 +37,39 @@ const ApiPublicImgSplatRoute = ApiPublicImgSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
   '/api/public/img/$': typeof ApiPublicImgSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
   '/api/public/img/$': typeof ApiPublicImgSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
   '/api/public/img/$': typeof ApiPublicImgSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/public/banner/$slug' | '/api/public/img/$'
+  fullPaths: '/' | '/$slug' | '/api/public/banner/$slug' | '/api/public/img/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/public/banner/$slug' | '/api/public/img/$'
-  id: '__root__' | '/' | '/api/public/banner/$slug' | '/api/public/img/$'
+  to: '/' | '/$slug' | '/api/public/banner/$slug' | '/api/public/img/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/$slug'
+    | '/api/public/banner/$slug'
+    | '/api/public/img/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SlugRoute: typeof SlugRoute
   ApiPublicBannerSlugRoute: typeof ApiPublicBannerSlugRoute
   ApiPublicImgSplatRoute: typeof ApiPublicImgSplatRoute
 }
@@ -66,6 +81,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$slug': {
+      id: '/$slug'
+      path: '/$slug'
+      fullPath: '/$slug'
+      preLoaderRoute: typeof SlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/banner/$slug': {
@@ -87,6 +109,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SlugRoute: SlugRoute,
   ApiPublicBannerSlugRoute: ApiPublicBannerSlugRoute,
   ApiPublicImgSplatRoute: ApiPublicImgSplatRoute,
 }

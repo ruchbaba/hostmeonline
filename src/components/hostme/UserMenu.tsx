@@ -206,7 +206,8 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
             STATIC_PAGES.map((p) => (
               <Link
                 key={p.key}
-                to={p.path}
+                to="/$slug"
+                params={{ slug: p.key }}
                 onClick={close}
                 className="press block rounded-md py-1.5 pl-10 pr-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
               >
