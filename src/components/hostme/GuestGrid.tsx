@@ -15,6 +15,7 @@ import { TestModeNote } from "./SponsorMenu";
 
 interface FillCard {
   key: string;
+  hostId: string;
   slug: string;
   name: string;
   image: string;
@@ -35,11 +36,11 @@ async function randomFill(exclude: string[], n: number): Promise<FillCard[]> {
   return (data ?? [])
     .filter((h) => !exclude.includes(h.id))
     .slice(0, n)
-    .map((h) => ({ key: `r-${h.id}`, slug: h.slug, name: h.name, image: h.image_url, views: h.views }));
+    .map((h) => ({ key: `r-${h.id}`, hostId: h.id, slug: h.slug, name: h.name, image: h.image_url, views: h.views }));
 }
 
 function toCard(s: SponsorPick): FillCard {
-  return { key: `c-${s.campaign_id}`, slug: s.slug, name: s.name, image: s.image_url, views: s.views, campaignId: s.campaign_id };
+  return { key: `c-${s.campaign_id}`, hostId: s.host_id, slug: s.slug, name: s.name, image: s.image_url, views: s.views, campaignId: s.campaign_id };
 }
 
 export function GuestGrid({ host, isOwner, pinnedRef }: { host: Host; isOwner: boolean; pinnedRef?: string | null }) {
@@ -59,8 +60,8 @@ export function GuestGrid({ host, isOwner, pinnedRef }: { host: Host; isOwner: b
     staleTime: 60_000,
     queryFn: async () => {
       const rentAds = (await pickSponsors("hosts", host.tags, exclude, stats.rented)).map(toCard);
-      const ex2 = [...exclude, ...rentAds.map((c) => c.slug)];
       const hostme = (await pickSponsors("hostme", host.tags, exclude, sponsorRow)).map(toCard);
+      const ex2 = [...exclude, ...rentAds.map((c) => c.hostId), ...hostme.map((c) => c.hostId)];
       const missing = stats.rented - rentAds.length + (sponsorRow - hostme.length);
       const random = await randomFill(ex2, missing);
       const rent = [...rentAds, ...random.splice(0, stats.rented - rentAds.length)];
