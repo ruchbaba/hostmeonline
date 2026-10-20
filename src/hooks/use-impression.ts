@@ -9,7 +9,6 @@ export function useImpression<T extends Element>(onImpression: (() => void) | nu
   const fired = useRef<string | null>(null);
   useEffect(() => {
     const el = ref.current;
-    console.log("IMPR_EFFECT", !!el, !!onImpression, fired.current);
     if (!el || !onImpression || fired.current === (key ?? "1")) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const obs = new IntersectionObserver(

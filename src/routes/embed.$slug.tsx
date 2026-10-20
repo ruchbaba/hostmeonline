@@ -92,7 +92,6 @@ function EmbedPage() {
 
   // Count one shared Sparkle impression for the host once the banner is fully seen for 1s.
   const ref = useImpression<HTMLAnchorElement>(() => {
-    console.log("EMBED_IMPRESSION");
     void supabase.rpc("track_shared_impression", { p_host: host.id, p_session: embedSession() });
   }, host.id);
 
