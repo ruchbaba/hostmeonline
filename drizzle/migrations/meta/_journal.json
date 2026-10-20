@@ -22,6 +22,13 @@
       "when": 1792421860752,
       "tag": "0002_revoke_internal_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792465394651,
+      "tag": "0003_stripe_checkouts",
+      "breakpoints": true
     }
   ]
 }

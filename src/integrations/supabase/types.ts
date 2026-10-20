@@ -567,6 +567,42 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_checkouts: {
+        Row: {
+          amount_usd: number
+          created_at: string
+          fulfilled_at: string | null
+          host_id: string | null
+          kind: string
+          mode: string
+          session_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_usd: number
+          created_at?: string
+          fulfilled_at?: string | null
+          host_id?: string | null
+          kind: string
+          mode?: string
+          session_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount_usd?: number
+          created_at?: string
+          fulfilled_at?: string | null
+          host_id?: string | null
+          kind?: string
+          mode?: string
+          session_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       track_events: {
         Row: {
           created_at: string
@@ -677,6 +713,10 @@ export type Database = {
       }
       email_status: { Args: { p_email: string }; Returns: string }
       esc_html: { Args: { p: string }; Returns: string }
+      fulfill_checkout: {
+        Args: { p_mode: string; p_session: string }
+        Returns: string
+      }
       get_global_stats: { Args: never; Returns: Json }
       gift_status: { Args: never; Returns: Json }
       has_role: {
