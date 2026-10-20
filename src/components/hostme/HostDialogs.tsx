@@ -180,6 +180,7 @@ export function SpyDialog({ host, open, onClose, isOwner }: Base & { isOwner: bo
             </Button>
           </form>
         )}
+        <p className="text-center text-[11px] text-muted-foreground">Email alerts are coming soon — your Spy is saved and will start sending once they launch.</p>
       </DialogContent>
     </Dialog>
   );
