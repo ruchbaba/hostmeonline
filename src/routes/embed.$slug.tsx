@@ -38,16 +38,18 @@ export const Route = createFileRoute("/embed/$slug")({
 
 /** Session key that survives blocked third-party storage inside iframes. */
 let memKey = "";
+const rid = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
 function embedSession(): string {
   try {
     let k = sessionStorage.getItem("hostme_session");
     if (!k) {
-      k = crypto.randomUUID();
+      k = rid();
       sessionStorage.setItem("hostme_session", k);
     }
     return k;
   } catch {
-    if (!memKey) memKey = crypto.randomUUID();
+    if (!memKey) memKey = rid();
     return memKey;
   }
 }
