@@ -1,6 +1,7 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
 import { SponsorMenu } from "./SponsorMenu";
 import { UserMenu } from "./UserMenu";
+import { CheckoutSync } from "@/hooks/use-checkout";
 
 export function AppHeader() {
   return (
@@ -17,6 +18,7 @@ export function AppHeader() {
         <div className="justify-self-end">
           <ClientOnly fallback={<span className="inline-block h-9 w-9" />}>
             <UserMenu />
+            <CheckoutSync />
           </ClientOnly>
         </div>
       </div>
