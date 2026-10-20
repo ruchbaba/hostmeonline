@@ -11,6 +11,8 @@ import { slugify } from "@/lib/format";
 import type { StaticPageRow } from "@/lib/public.functions";
 import { Frame169 } from "./Banner";
 import { FooterSearch } from "./FooterSearch";
+import { GuideBannerField } from "./GuideBannerField";
+import { GuideBoard } from "./GuideBoard";
 
 export function StaticPageView({ initial }: { initial: StaticPageRow }) {
   const { me } = useMe();
@@ -54,10 +56,18 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
           <Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="Title" />
           <Input value={draft.subtitle} onChange={(e) => setDraft({ ...draft, subtitle: e.target.value })} placeholder="Subtitle" />
           <Textarea rows={10} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
-          <Input value={draft.banner1_url} onChange={(e) => setDraft({ ...draft, banner1_url: e.target.value })} placeholder="First banner image URL" />
-          <Input value={draft.banner1_link} onChange={(e) => setDraft({ ...draft, banner1_link: e.target.value })} placeholder="First banner link" />
-          <Input value={draft.banner2_url} onChange={(e) => setDraft({ ...draft, banner2_url: e.target.value })} placeholder="Second banner image URL" />
-          <Input value={draft.banner2_link} onChange={(e) => setDraft({ ...draft, banner2_link: e.target.value })} placeholder="Second banner link" />
+          <GuideBannerField
+            label="First banner"
+            url={draft.banner1_url}
+            link={draft.banner1_link}
+            onChange={(v) => setDraft((d) => ({ ...d, banner1_url: v.url, banner1_link: v.link }))}
+          />
+          <GuideBannerField
+            label="Second banner"
+            url={draft.banner2_url}
+            link={draft.banner2_link}
+            onChange={(v) => setDraft((d) => ({ ...d, banner2_url: v.url, banner2_link: v.link }))}
+          />
           <div className="flex gap-2">
             <Button variant="gold" onClick={() => void save()}>Save</Button>
             <Button variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
@@ -75,8 +85,9 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
           )}
         </header>
       )}
-      {banner(page.banner1_url, page.banner1_link)}
-      {banner(page.banner2_url, page.banner2_link)}
+      {!editing && banner(page.banner1_url, page.banner1_link)}
+      {!editing && banner(page.banner2_url, page.banner2_link)}
+      <GuideBoard pageKey={page.key} />
       <FooterSearch />
     </main>
   );
