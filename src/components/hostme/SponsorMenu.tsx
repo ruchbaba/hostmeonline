@@ -17,8 +17,8 @@ type Panel = "rent" | "hosts" | "hostme" | null;
 
 export function TestModeNote() {
   return (
-    <p className="text-[11px] text-muted-foreground">
-      Payments run in test mode for now — no card is charged until live checkout is connected.
+    <p className="text-center text-[11px] text-muted-foreground">
+      Secure card payment by Stripe opens in a new tab. Your purchase activates as soon as it's paid.
     </p>
   );
 }
@@ -142,7 +142,9 @@ function RentDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
 function SponsorDialog({ kind, open, onClose }: { kind: "hosts" | "hostme"; open: boolean; onClose: () => void }) {
   const { acting, user, me, refresh } = useMe();
   const qc = useQueryClient();
-  const [busy, setBusy] = useState(false);
+  const checkout = useCheckout();
+  const [rpcBusy, setBusy] = useState(false);
+  const busy = rpcBusy || checkout.busy;
   const campaigns = useQuery({
     queryKey: qk.campaigns(user?.id ?? null),
     enabled: open && !!user,
@@ -166,6 +168,10 @@ function SponsorDialog({ kind, open, onClose }: { kind: "hosts" | "hostme"; open
 
   const act = async (fn: "buy" | "gift") => {
     if (!acting) return;
+    if (fn === "buy" && !free) {
+      if (await checkout.start(kind === "hosts" ? "impressions_hosts" : "impressions_hostme", acting.id)) onClose();
+      return;
+    }
     setBusy(true);
     try {
       const { data, error } =
