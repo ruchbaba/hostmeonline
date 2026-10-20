@@ -7,9 +7,9 @@
 - [x] Image canvas: drag + pinch/scroll, 1200px WebP 82%, image safety check, upload
 - [x] Footer search: purple autocomplete, related-tag matching, filters, infinite feed with sponsored slots
 - [x] Write Anything page, basic messages list, 8 guide pages (editable by owner)
-- [ ] Live embed widget page (/embed/…) — share codes already point to it
-- [ ] Community micro-board on guide pages (table ready) + upload for guide banners
-- [ ] Reply box in Messages
+- [x] Live embed widget (/embed/<slug>): rotating host + guests + rented sponsor slide, Sparkle + shared sponsor impressions
+- [x] Community micro-board on guide pages (live) + 16:9 banner upload for guide banners (owner)
+- [x] Messages as conversations with reply box, read on open
 - [x] Real payments via user's own Stripe key — checkout for extra page, guest slot, both impression packs (Stripe currently in test/sandbox mode)
 - [ ] Real email delivery for message + Spy alerts — coming soon (user deferred)
 - [ ] Branded login email with banner preview — coming soon (user deferred)

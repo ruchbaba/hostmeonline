@@ -12,3 +12,5 @@
 ## Project rules
 - Paid items use Stripe Checkout (user's own key, `STRIPE_SECRET_KEY`) created in `src/lib/checkout.functions.ts`; items are granted only by the service-role-only `fulfill_checkout` SQL function after Stripe reports the session paid — why: client-callable buy RPCs must never grant paid items (they only work for the admin/owner, comped).
 - No Stripe webhooks: purchases are confirmed on `/payment-success` and by `CheckoutSync` when the user returns to the app — why: keeps setup to one secret; add a webhook route if payments must apply while the user never returns.
+- Messages are grouped into conversations by (my Host page, other party) in pure `src/lib/threads.ts`; replies always go through the `send_message` RPC — why: one tested rule decides who a reply goes to.
+- Email delivery (message/Spy alerts, branded login email) is deferred: alerts queue in `email_outbox` and the UI labels them "coming soon" — why: user chose to postpone email; enabling it later only needs a sender that drains the outbox.
