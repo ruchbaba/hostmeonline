@@ -10,6 +10,6 @@
 - [ ] Live embed widget page (/embed/…) — share codes already point to it
 - [ ] Community micro-board on guide pages (table ready) + upload for guide banners
 - [ ] Reply box in Messages
-- [ ] Real payments via user's own Stripe key (key saved) — wire checkout for $29.99 page, $9.99 slot, $10 impressions; purchases still run in test mode
+- [x] Real payments via user's own Stripe key — checkout for extra page, guest slot, both impression packs (Stripe currently in test/sandbox mode)
 - [ ] Real email delivery for message + Spy alerts — blocked: needs an email sender domain; alerts queue in mock mode
 - [ ] Branded login email with banner preview — blocked: needs an email sender domain
