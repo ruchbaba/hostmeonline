@@ -249,8 +249,9 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
 }
 
 export function BuyPageDialog({ open, onClose, onReady }: { open: boolean; onClose: () => void; onReady: () => void }) {
-  const { me, refresh } = useMe();
-  const [busy, setBusy] = useState(false);
+  const { me } = useMe();
+  const checkout = useCheckout();
+  const busy = checkout.busy;
   const free = me?.isAdmin;
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -268,13 +269,7 @@ export function BuyPageDialog({ open, onClose, onReady }: { open: boolean; onClo
           disabled={busy}
           onClick={async () => {
             if (free) return onReady();
-            setBusy(true);
-            const { data, error } = await supabase.rpc("buy_extra_page");
-            setBusy(false);
-            if (error || data !== "ok") return toast.error(error?.message || "Could not complete");
-            refresh();
-            toast.success("New Host page unlocked");
-            onReady();
+            if (await checkout.start("extra_page")) onClose();
           }}
         >
           <Plus /> {free ? "Start a New Host" : `Buy for ${usd(PRICES.extraPage)}`}

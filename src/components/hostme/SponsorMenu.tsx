@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/use-me";
+import { useCheckout } from "@/hooks/use-checkout";
 import { fetchSlotStats, qk, type Campaign } from "@/lib/api";
 import { compact, usd } from "@/lib/format";
 import { PRICES } from "@/lib/slots";

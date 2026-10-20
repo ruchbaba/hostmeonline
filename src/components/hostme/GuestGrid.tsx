@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/use-me";
+import { useCheckout } from "@/hooks/use-checkout";
 import { fetchGuests, fetchSlotStats, pickSponsors, qk, trackImpression, type Host, type SponsorPick } from "@/lib/api";
 import { PRICES, buildSlots, rankGuests, slotStats, sponsorRowCount } from "@/lib/slots";
 import { usd } from "@/lib/format";
@@ -152,7 +153,9 @@ export function GuestGrid({ host, isOwner, pinnedRef }: { host: Host; isOwner: b
 function BuySlotDialog({ host, open, onClose }: { host: Host; open: boolean; onClose: () => void }) {
   const { me, refresh } = useMe();
   const qc = useQueryClient();
-  const [busy, setBusy] = useState(false);
+  const checkout = useCheckout();
+  const [rpcBusy, setBusy] = useState(false);
+  const busy = rpcBusy || checkout.busy;
   const free = me?.isAdmin;
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -167,6 +170,10 @@ function BuySlotDialog({ host, open, onClose }: { host: Host; open: boolean; onC
           variant="gold"
           disabled={busy}
           onClick={async () => {
+            if (!free) {
+              if (await checkout.start("extra_slot", host.id)) onClose();
+              return;
+            }
             setBusy(true);
             const { data, error } = await supabase.rpc("buy_extra_slot", { p_host: host.id });
             setBusy(false);
