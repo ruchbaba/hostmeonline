@@ -75,7 +75,7 @@ function MessagesPage() {
 }
 
 function ThreadCard({ thread, hosts }: { thread: Thread<Row>; hosts: Record<string, HostInfo> }) {
-  const { me } = useMe();
+  const { me, user } = useMe();
   const qc = useQueryClient();
   const [open, setOpen] = useState(thread.unread > 0);
   const [text, setText] = useState("");
@@ -93,7 +93,7 @@ function ThreadCard({ thread, hosts }: { thread: Thread<Row>; hosts: Record<stri
       if (unreadIds.length) {
         await supabase.from("messages").update({ read_at: new Date().toISOString() }).in("id", unreadIds);
         void qc.invalidateQueries({ queryKey: ["messages"] });
-        void qc.invalidateQueries({ queryKey: qk.unread(me ? null : null).slice(0, 1) });
+        void qc.invalidateQueries({ queryKey: qk.unread(user?.id ?? null) });
       }
     }
   };
