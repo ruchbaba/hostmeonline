@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/use-me";
+import { useCheckout } from "@/hooks/use-checkout";
 import { useUnread } from "@/hooks/use-unread";
 import { emailStatus, sendOtp, type Host } from "@/lib/api";
 import { inboxUrl, requestStartHost, updatePrefs, usePrefs } from "@/lib/prefs";
