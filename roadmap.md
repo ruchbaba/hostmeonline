@@ -11,5 +11,5 @@
 - [ ] Community micro-board on guide pages (table ready) + upload for guide banners
 - [ ] Reply box in Messages
 - [x] Real payments via user's own Stripe key — checkout for extra page, guest slot, both impression packs (Stripe currently in test/sandbox mode)
-- [ ] Real email delivery for message + Spy alerts — blocked: needs an email sender domain; alerts queue in mock mode
-- [ ] Branded login email with banner preview — blocked: needs an email sender domain
+- [ ] Real email delivery for message + Spy alerts — coming soon (user deferred)
+- [ ] Branded login email with banner preview — coming soon (user deferred)
