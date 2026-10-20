@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Send } from "lucide-react";
@@ -85,18 +85,21 @@ function ThreadCard({ thread, hosts }: { thread: Thread<Row>; hosts: Record<stri
   const otherName = other?.name ?? (thread.other.kind === "messenger" ? "A visitor" : "Host");
   const last = thread.messages[thread.messages.length - 1];
 
-  const toggle = async () => {
-    const next = !open;
-    setOpen(next);
-    if (next && thread.unread > 0) {
-      const unreadIds = thread.messages.filter((m) => m.read_at === null && m.to_host_id === thread.myHostId).map((m) => m.id);
-      if (unreadIds.length) {
-        await supabase.from("messages").update({ read_at: new Date().toISOString() }).in("id", unreadIds);
+  useEffect(() => {
+    if (!open || thread.unread === 0) return;
+    const unreadIds = thread.messages.filter((m) => m.read_at === null && m.to_host_id === thread.myHostId).map((m) => m.id);
+    if (!unreadIds.length) return;
+    void supabase
+      .from("messages")
+      .update({ read_at: new Date().toISOString() })
+      .in("id", unreadIds)
+      .then(() => {
         void qc.invalidateQueries({ queryKey: ["messages"] });
         void qc.invalidateQueries({ queryKey: qk.unread(user?.id ?? null) });
-      }
-    }
-  };
+      });
+  }, [open, thread, qc, user?.id]);
+
+  const toggle = () => setOpen((o) => !o);
 
   const send = async () => {
     const body = text.trim();
@@ -117,7 +120,7 @@ function ThreadCard({ thread, hosts }: { thread: Thread<Row>; hosts: Record<stri
 
   return (
     <div className={cn("rounded-xl border bg-card", thread.unread > 0 && "border-gold/50")}>
-      <button onClick={() => void toggle()} className="press flex w-full items-center gap-3 p-3 text-left">
+      <button onClick={toggle} className="press flex w-full items-center gap-3 p-3 text-left">
         <div className="w-20 shrink-0">
           <Frame169 src={other?.image_url} alt={otherName} className="rounded-lg" />
         </div>
