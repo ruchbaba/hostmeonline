@@ -88,27 +88,38 @@ export async function uploadBanner(blob: Blob, folder: string): Promise<string> 
   return `/api/public/img/${path}`;
 }
 
-export function trackView(hostId: string, ref?: string | null, src?: string | null) {
+/** Sends a query now. Supabase query builders are lazy: without await/then no request is made. */
+export async function fire(q: PromiseLike<unknown>): Promise<void> {
+  try {
+    await q;
+  } catch {
+    /* tracking is best-effort */
+  }
+}
+
+export function trackView(hostId: string, ref?: string | null, src?: string | null): Promise<void> {
   const s = getSessionKey();
-  if (!s) return;
-  void supabase.rpc("track_view", { p_host: hostId, p_session: s, p_ref: ref ?? undefined, p_src: src ?? undefined });
+  if (!s) return Promise.resolve();
+  return fire(supabase.rpc("track_view", { p_host: hostId, p_session: s, p_ref: ref ?? undefined, p_src: src ?? undefined }));
 }
 
 export function trackImpression(campaignId: string, servedOnHost: string | null, context: "inapp" | "shared") {
   const s = getSessionKey();
   if (!s) return;
-  void supabase.rpc("track_impression", {
-    p_campaign: campaignId,
-    p_host: (servedOnHost ?? null) as unknown as string,
-    p_context: context,
-    p_session: s,
-  });
+  void fire(
+    supabase.rpc("track_impression", {
+      p_campaign: campaignId,
+      p_host: (servedOnHost ?? null) as unknown as string,
+      p_context: context,
+      p_session: s,
+    }),
+  );
 }
 
 export function trackSharedImpression(hostId: string) {
   const s = getSessionKey();
   if (!s) return;
-  void supabase.rpc("track_shared_impression", { p_host: hostId, p_session: s });
+  void fire(supabase.rpc("track_shared_impression", { p_host: hostId, p_session: s }));
 }
 
 export async function sendOtp(email: string) {
