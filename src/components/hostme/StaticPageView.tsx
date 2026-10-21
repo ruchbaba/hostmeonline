@@ -11,7 +11,7 @@ import { slugify } from "@/lib/format";
 import type { StaticPageRow } from "@/lib/public.functions";
 import { embedSlugOf } from "@/lib/embed-code";
 import { Frame169 } from "./Banner";
-import { EmbedFrame } from "./EmbedFrame";
+import { LiveHostBanner } from "./LiveHostBanner";
 import { FooterSearch } from "./FooterSearch";
 import { GuideBannerField } from "./GuideBannerField";
 import { GuideBoard } from "./GuideBoard";
@@ -46,7 +46,7 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
 
   const banner = (url: string, link: string) => {
     const slug = embedSlugOf(url);
-    if (slug) return <EmbedFrame slug={slug} title={`${page.title} — live Hostme banner`} />;
+    if (slug) return <LiveHostBanner slug={slug} />;
     return url ? (
       <a href={link || undefined} target="_blank" rel="noreferrer" className="press block">
         <Frame169 src={url} alt={page.title} />
@@ -91,8 +91,8 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
         </header>
       )}
       {!editing && banner(page.banner1_url, page.banner1_link)}
-      {!editing && banner(page.banner2_url, page.banner2_link)}
       <GuideBoard pageKey={page.key} />
+      {!editing && banner(page.banner2_url, page.banner2_link)}
       <FooterSearch />
     </main>
   );
