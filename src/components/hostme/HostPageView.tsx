@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/hooks/use-me";
 import { qk, trackView, type Host } from "@/lib/api";
@@ -26,9 +26,10 @@ export function useLiveHost(initial: Host) {
 /** Counts the view once per page open and makes an owned page the acting page. */
 export function useHostVisit(host: Host, ref?: string, src?: string) {
   const { user, isOwnerView } = useMe();
+  const qc = useQueryClient();
   const owner = isOwnerView(host);
   useEffect(() => {
-    trackView(host.id, ref, src);
+    void trackView(host.id, ref, src).then(() => qc.invalidateQueries({ queryKey: qk.host(host.slug) }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [host.id]);
   useEffect(() => {

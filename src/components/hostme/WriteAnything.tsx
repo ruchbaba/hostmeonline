@@ -88,7 +88,7 @@ export function WriteBadge() {
   );
 }
 
-/** A host's single active status (host page / Hostme status card). */
+/** A host's single active status (host page / Hostme owner card). Text only — the banner is already above it. */
 export function StatusCard({ host, isOwner, showEmpty = true }: { host: Host; isOwner: boolean; showEmpty?: boolean }) {
   const post = usePost(host.id);
   if (!post.data && !(isOwner && showEmpty)) return null;
@@ -99,7 +99,7 @@ export function StatusCard({ host, isOwner, showEmpty = true }: { host: Host; is
         {post.data && <span className="text-[11px] text-muted-foreground underline-offset-2 hover:underline">history</span>}
       </div>
       {post.data ? (
-        <PostBody image={host.image_url} name={host.is_home ? "Hostme" : host.name} body={post.data.body} />
+        <p className="whitespace-pre-line text-sm leading-relaxed">{post.data.body}</p>
       ) : (
         <p className="text-sm text-muted-foreground">{WRITE_TIP}</p>
       )}
