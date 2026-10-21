@@ -7,7 +7,7 @@ import { useBannerUpload } from "@/hooks/use-banner-upload";
 import { useMe } from "@/hooks/use-me";
 import { embedSlugOf, embedValue, parseEmbedCode } from "@/lib/embed-code";
 import { Frame169 } from "./Banner";
-import { EmbedFrame } from "./EmbedFrame";
+import { LiveHostBanner } from "./LiveHostBanner";
 import { ImageCanvas, type ImageCanvasHandle } from "./ImageCanvas";
 
 /**
@@ -72,7 +72,7 @@ export function GuideBannerField({
         </>
       ) : url ? (
         <div className="relative">
-          {embedSlug ? <EmbedFrame slug={embedSlug} title={label} /> : <Frame169 src={url} alt={label} />}
+          {embedSlug ? <LiveHostBanner slug={embedSlug} /> : <Frame169 src={url} alt={label} />}
           <div className="absolute right-2 top-2 z-10 flex gap-1">
             <Button size="icon" variant="secondary" onClick={() => setPicking(true)} aria-label="Replace banner">
               <ImagePlus />
