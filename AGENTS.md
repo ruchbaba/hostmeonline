@@ -14,3 +14,4 @@
 - No Stripe webhooks: purchases are confirmed on `/payment-success` and by `CheckoutSync` when the user returns to the app — why: keeps setup to one secret; add a webhook route if payments must apply while the user never returns.
 - Messages are grouped into conversations by (my Host page, other party) in pure `src/lib/threads.ts`; replies always go through the `send_message` RPC — why: one tested rule decides who a reply goes to.
 - Email delivery (message/Spy alerts, branded login email) is deferred: alerts queue in `email_outbox` and the UI labels them "coming soon" — why: user chose to postpone email; enabling it later only needs a sender that drains the outbox.
+- Fire-and-forget Supabase calls (view/impression tracking) go through `fire()` in `src/lib/api.ts` — why: query builders are lazy and `void supabase.rpc(...)` never sends a request.
