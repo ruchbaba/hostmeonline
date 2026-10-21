@@ -72,8 +72,8 @@ export function HomeView({ initial, refId, src }: { initial: Host; refId?: strin
       </section>
 
       <section className="space-y-3">
-        <StatusCard host={host} isOwner={isOwner} />
-        {!isOwner && <LiveTicker excludeHostId={host.id} />}
+        {/* Owner edits Hostme's own status (text only); visitors see only the rotating live ticker. */}
+        {isOwner ? <StatusCard host={host} isOwner /> : <LiveTicker />}
       </section>
 
       <GuestGrid host={host} isOwner={isOwner} pinnedRef={refId} />

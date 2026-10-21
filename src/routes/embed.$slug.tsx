@@ -4,7 +4,7 @@ import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getEmbedHost } from "@/lib/public.functions";
-import { fetchGuests, pickSponsors } from "@/lib/api";
+import { fetchGuests, fire, pickSponsors } from "@/lib/api";
 import { useRotating } from "@/hooks/use-rotating";
 import { useImpression } from "@/hooks/use-impression";
 import { compact } from "@/lib/format";
@@ -92,7 +92,7 @@ function EmbedPage() {
 
   // Count one shared Sparkle impression for the host once the banner is fully seen for 1s.
   const ref = useImpression<HTMLAnchorElement>(() => {
-    void supabase.rpc("track_shared_impression", { p_host: host.id, p_session: embedSession() });
+    void fire(supabase.rpc("track_shared_impression", { p_host: host.id, p_session: embedSession() }));
   }, host.id);
 
   // Paid sponsor slide counts as a shared impression after 1s on screen.
@@ -103,7 +103,7 @@ function EmbedPage() {
     const t = setTimeout(() => {
       if (document.visibilityState !== "visible") return;
       tracked.current.add(c);
-      void supabase.rpc("track_impression", { p_campaign: c, p_host: host.id, p_context: "shared", p_session: embedSession() });
+      void fire(supabase.rpc("track_impression", { p_campaign: c, p_host: host.id, p_context: "shared", p_session: embedSession() }));
     }, 1000);
     return () => clearTimeout(t);
   }, [item?.campaignId, host.id]);
