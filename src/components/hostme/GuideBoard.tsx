@@ -5,24 +5,11 @@ import { ExternalLink, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useMe } from "@/hooks/use-me";
 import { Frame169 } from "./Banner";
 
 const MAX = 600;
-
-function safeLink(v: string): string | null {
-  const t = v.trim();
-  if (!t) return null;
-  const withProto = /^https?:\/\//i.test(t) ? t : `https://${t}`;
-  try {
-    const u = new URL(withProto);
-    return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : null;
-  } catch {
-    return null;
-  }
-}
 
 function ago(iso: string) {
   const s = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
@@ -37,7 +24,6 @@ export function GuideBoard({ pageKey }: { pageKey: string }) {
   const { user, acting, me } = useMe();
   const qc = useQueryClient();
   const [body, setBody] = useState("");
-  const [link, setLink] = useState("");
   const [busy, setBusy] = useState(false);
   const qKey = ["board", pageKey];
 
@@ -71,14 +57,11 @@ export function GuideBoard({ pageKey }: { pageKey: string }) {
     if (!acting) return;
     const text = body.trim();
     if (!text) return;
-    const l = link.trim() ? safeLink(link) : null;
-    if (link.trim() && !l) return toast.error("That link doesn't look right");
     setBusy(true);
-    const { error } = await supabase.from("board_posts").insert({ page_key: pageKey, host_id: acting.id, body: text.slice(0, MAX), link: l });
+    const { error } = await supabase.from("board_posts").insert({ page_key: pageKey, host_id: acting.id, body: text.slice(0, MAX) });
     setBusy(false);
     if (error) return toast.error("Could not post");
     setBody("");
-    setLink("");
     await qc.invalidateQueries({ queryKey: qKey });
   };
 
@@ -105,15 +88,14 @@ export function GuideBoard({ pageKey }: { pageKey: string }) {
             onChange={(e) => setBody(e.target.value)}
             placeholder="Share a tip, a story or a question…"
           />
-          <div className="flex gap-2">
-            <Input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link (optional)" inputMode="url" />
-            <Button variant="gold" disabled={busy || !body.trim()} onClick={() => void post()} aria-label="Post">
-              <Send />
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] tabular-nums text-muted-foreground">
+              {body.length}/{MAX}
+            </p>
+            <Button variant="gold" size="sm" disabled={busy || !body.trim()} onClick={() => void post()} aria-label="Post">
+              <Send /> Post
             </Button>
           </div>
-          <p className="text-right text-[11px] tabular-nums text-muted-foreground">
-            {body.length}/{MAX}
-          </p>
         </div>
       ) : (
         <p className="rounded-xl border border-dashed p-3 text-center text-sm text-muted-foreground">

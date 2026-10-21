@@ -1,14 +1,19 @@
 import { useRef, useState } from "react";
-import { ImagePlus, Loader2, Trash2, Upload } from "lucide-react";
+import { Code2, ImagePlus, Loader2, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBannerUpload } from "@/hooks/use-banner-upload";
 import { useMe } from "@/hooks/use-me";
+import { embedSlugOf, embedValue, parseEmbedCode } from "@/lib/embed-code";
 import { Frame169 } from "./Banner";
+import { EmbedFrame } from "./EmbedFrame";
 import { ImageCanvas, type ImageCanvasHandle } from "./ImageCanvas";
 
-/** Owner-only 16:9 banner picker for guide pages: upload via the crop canvas, plus an optional link. */
+/**
+ * Owner-only 16:9 banner picker for guide pages: upload via the crop canvas (plus optional link),
+ * or paste a live embed code copied from any Host page's share button.
+ */
 export function GuideBannerField({
   label,
   url,
@@ -24,6 +29,8 @@ export function GuideBannerField({
   const canvas = useRef<ImageCanvasHandle>(null);
   const upload = useBannerUpload();
   const [picking, setPicking] = useState(false);
+  const [code, setCode] = useState("");
+  const embedSlug = embedSlugOf(url);
 
   const save = async () => {
     if (!user) return;
@@ -35,6 +42,17 @@ export function GuideBannerField({
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     }
+  };
+
+  const applyCode = (value: string) => {
+    setCode(value);
+    if (!value.trim()) return;
+    const slug = parseEmbedCode(value);
+    if (!slug) return toast.error("Paste the Live embed code from a Host page's share button");
+    onChange({ url: embedValue(slug), link: "" });
+    setCode("");
+    setPicking(false);
+    toast.success("Live banner added — press Save to publish");
   };
 
   return (
@@ -54,12 +72,12 @@ export function GuideBannerField({
         </>
       ) : url ? (
         <div className="relative">
-          <Frame169 src={url} alt={label} />
-          <div className="absolute right-2 top-2 flex gap-1">
+          {embedSlug ? <EmbedFrame slug={embedSlug} title={label} /> : <Frame169 src={url} alt={label} />}
+          <div className="absolute right-2 top-2 z-10 flex gap-1">
             <Button size="icon" variant="secondary" onClick={() => setPicking(true)} aria-label="Replace banner">
               <ImagePlus />
             </Button>
-            <Button size="icon" variant="secondary" onClick={() => onChange({ url: "", link })} aria-label="Remove banner">
+            <Button size="icon" variant="secondary" onClick={() => onChange({ url: "", link: "" })} aria-label="Remove banner">
               <Trash2 />
             </Button>
           </div>
@@ -73,7 +91,19 @@ export function GuideBannerField({
           <ImagePlus className="h-8 w-8" />
         </button>
       )}
-      <Input value={link} onChange={(e) => onChange({ url, link: e.target.value })} placeholder="Where the banner opens (optional link)" inputMode="url" />
+      <div className="relative">
+        <Code2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={code}
+          onChange={(e) => applyCode(e.target.value)}
+          placeholder="Or paste a Live embed code from a share button"
+          className="pl-9"
+          aria-label={`Paste live embed code for ${label}`}
+        />
+      </div>
+      {!embedSlug && (
+        <Input value={link} onChange={(e) => onChange({ url, link: e.target.value })} placeholder="Where the banner opens (optional link)" inputMode="url" />
+      )}
     </div>
   );
 }

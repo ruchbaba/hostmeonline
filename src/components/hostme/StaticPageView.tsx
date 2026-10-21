@@ -9,7 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useMe } from "@/hooks/use-me";
 import { slugify } from "@/lib/format";
 import type { StaticPageRow } from "@/lib/public.functions";
+import { embedSlugOf } from "@/lib/embed-code";
 import { Frame169 } from "./Banner";
+import { EmbedFrame } from "./EmbedFrame";
 import { FooterSearch } from "./FooterSearch";
 import { GuideBannerField } from "./GuideBannerField";
 import { GuideBoard } from "./GuideBoard";
@@ -42,12 +44,15 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
     if (slug !== page.slug) navigate({ to: "/$slug", params: { slug } });
   };
 
-  const banner = (url: string, link: string) =>
-    url ? (
+  const banner = (url: string, link: string) => {
+    const slug = embedSlugOf(url);
+    if (slug) return <EmbedFrame slug={slug} title={`${page.title} — live Hostme banner`} />;
+    return url ? (
       <a href={link || undefined} target="_blank" rel="noreferrer" className="press block">
         <Frame169 src={url} alt={page.title} />
       </a>
     ) : null;
+  };
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-3 py-6">
