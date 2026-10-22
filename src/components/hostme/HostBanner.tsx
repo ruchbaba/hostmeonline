@@ -60,13 +60,23 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
   return (
     <>
       <Frame169 src={host.image_url} alt={host.name} className="rounded-2xl ring-1 ring-gold/15">
-        {centerClickable && (
+        {isOwner ? (
           <button
             type="button"
             aria-label="Open link"
             onClick={() => setOpen("link")}
             className="absolute left-1/4 top-1/4 h-1/2 w-1/2 cursor-pointer rounded-xl"
           />
+        ) : (
+          centerClickable && (
+            <a
+              href={host.destination_url!}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Visit webpage"
+              className="absolute left-1/4 top-1/4 h-1/2 w-1/2 cursor-pointer rounded-xl"
+            />
+          )
         )}
         <Chip className="left-3 top-3" label="Views" onClick={() => setOpen("views")}>
           <Eye /> {compact(host.views)}

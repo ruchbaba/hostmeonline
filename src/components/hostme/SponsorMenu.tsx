@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Coins, DoorOpen, Gift, Sparkles, Star, Store, Users } from "lucide-react";
+import { ChevronRight, Coins, DoorOpen, Wallet, Gift, Sparkles, Star, Store, Users } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -13,8 +13,9 @@ import { fetchSlotStats, qk, type Campaign } from "@/lib/api";
 import { compact, usd } from "@/lib/format";
 import { PRICES } from "@/lib/slots";
 import { TickingMoney } from "./TickingMoney";
+import { PayoutDialog } from "./PayoutDialog";
 
-type Panel = "rent" | "hosts" | "hostme" | null;
+type Panel = "rent" | "hosts" | "hostme" | "payout" | null;
 
 export function TestModeNote() {
   return (
@@ -43,11 +44,23 @@ export function SponsorMenu() {
           </button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-64 p-1.5">
+          <button
+            onClick={() => go("payout")}
+            className="press mb-1 flex w-full items-center gap-3 rounded-md bg-gold-soft px-3 py-2.5 text-left hover:bg-gold-soft/80"
+            aria-label="My earnings and payouts"
+          >
+            <Wallet className="h-4 w-4 text-gold" />
+            <TickingMoney value={totalBalance} className="font-semibold tabular-nums text-gold" />
+            <span className="ml-auto inline-flex items-center text-xs text-muted-foreground">
+              Payout <ChevronRight className="h-3.5 w-3.5" />
+            </span>
+          </button>
           <MenuItem icon={<Store />} label="Rent Out My Slots" onClick={() => go("rent")} />
           <MenuItem icon={<Users />} label="Sponsor with Hosts" onClick={() => go("hosts")} />
           <MenuItem icon={<Sparkles />} label="Sponsor with Hostme" onClick={() => go("hostme")} />
         </PopoverContent>
       </Popover>
+      <PayoutDialog open={panel === "payout"} onClose={() => setPanel(null)} />
       <RentDialog open={panel === "rent"} onClose={() => setPanel(null)} />
       <SponsorDialog kind="hosts" open={panel === "hosts"} onClose={() => setPanel(null)} />
       <SponsorDialog kind="hostme" open={panel === "hostme"} onClose={() => setPanel(null)} />

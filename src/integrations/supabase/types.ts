@@ -410,6 +410,39 @@ export type Database = {
           },
         ]
       }
+      payout_requests: {
+        Row: {
+          amount_usd: number
+          breakdown: Json
+          created_at: string
+          decided_at: string | null
+          id: string
+          paypal_email: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_usd: number
+          breakdown?: Json
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          paypal_email: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount_usd?: number
+          breakdown?: Json
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          paypal_email?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pending_signups: {
         Row: {
           created_at: string
@@ -672,6 +705,10 @@ export type Database = {
         Args: { p_destination: string; p_image_url: string; p_name: string }
         Returns: string
       }
+      decide_payout: {
+        Args: { p_action: string; p_id: string }
+        Returns: string
+      }
       decline_invite: { Args: { p_id: string }; Returns: string }
       delete_host: { Args: { p_host: string }; Returns: string }
       discover_hosts: {
@@ -787,6 +824,7 @@ export type Database = {
         Returns: string
       }
       request_ip: { Args: never; Returns: string }
+      request_payout: { Args: { p_email: string }; Returns: string }
       search_hosts: {
         Args: {
           p_limit: number

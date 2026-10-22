@@ -11,5 +11,7 @@
 - [x] Community micro-board on guide pages (live) + 16:9 banner upload for guide banners (owner)
 - [x] Messages as conversations with reply box, read on open
 - [x] Real payments via user's own Stripe key — checkout for extra page, guest slot, both impression packs (Stripe currently in test/sandbox mode)
+- [x] Visitors' banner center-click opens the external page directly
+- [x] Payouts: coin menu earnings → PayPal payout request (whole balance); admin Payout requests page with Mark paid / Reject
 - [ ] Real email delivery for message + Spy alerts — coming soon (user deferred)
 - [ ] Branded login email with banner preview — coming soon (user deferred)

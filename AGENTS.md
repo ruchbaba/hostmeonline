@@ -16,3 +16,4 @@
 - Email delivery (message/Spy alerts, branded login email) is deferred: alerts queue in `email_outbox` and the UI labels them "coming soon" — why: user chose to postpone email; enabling it later only needs a sender that drains the outbox.
 - Fire-and-forget Supabase calls (view/impression tracking) go through `fire()` in `src/lib/api.ts` — why: query builders are lazy and `void supabase.rpc(...)` never sends a request.
 - Guide-page banners store live embeds origin-free as `/embed/<slug>` (parsed by `src/lib/embed-code.ts`) — why: the same value works on preview, published and custom domains.
+- Host payouts are manual: `request_payout` moves every owned page balance into one `payout_requests` row (per-page `breakdown`), and only the admin's `decide_payout` marks it paid or rejects it (reject restores the breakdown) — why: no payout API; the owner sends money in PayPal by hand.
