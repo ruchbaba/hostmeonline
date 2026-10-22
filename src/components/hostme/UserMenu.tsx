@@ -19,6 +19,7 @@ import { STATIC_PAGES } from "@/lib/static-pages";
 import { cn } from "@/lib/utils";
 import { WaitingEmail } from "./WaitingEmail";
 import { TestModeNote } from "./SponsorMenu";
+import { TickingMoney } from "./TickingMoney";
 
 export function UserMenu() {
   const { user, ready } = useMe();

@@ -8,7 +8,6 @@ import { compact } from "@/lib/format";
 import { usePrefs } from "@/lib/prefs";
 import { cn } from "@/lib/utils";
 import { Frame169 } from "./Banner";
-import { TickingMoney } from "./TickingMoney";
 import { ChangeImageDialog, InviteDialog, LinkDialog, MessageDialog, ShareDialog, SpyDialog, StatsDialog } from "./HostDialogs";
 
 type Open = null | "link" | "spy" | "views" | "stars" | "entries" | "invite" | "share" | "message" | "change";
@@ -56,7 +55,6 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
     },
   });
   const spying = !isOwner && (user ? !!spyQ.data : !!prefs.spying[host.id]);
-  const balance = isOwner ? (me?.balances[host.id] ?? 0) : 0;
   const centerClickable = isOwner || !!host.destination_url;
 
   return (
