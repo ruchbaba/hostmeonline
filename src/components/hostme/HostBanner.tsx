@@ -100,11 +100,6 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
             <Mail />
           </Chip>
         )}
-        {isOwner && balance > 0 && (
-          <span className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-gold-foreground shadow-gold">
-            <TickingMoney value={balance} />
-          </span>
-        )}
       </Frame169>
 
       <LinkDialog host={host} open={open === "link"} onClose={close} isOwner={isOwner} />

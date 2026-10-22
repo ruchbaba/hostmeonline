@@ -56,11 +56,13 @@ export function GuestGrid({ host, isOwner, pinnedRef }: { host: Host; isOwner: b
   const sponsorRow = isOwner ? 0 : sponsorRowCount(slots.length, guests.length);
 
   const fillQ = useQuery({
-    queryKey: ["grid-fill", host.id, stats.rented, sponsorRow, exclude.join(",")],
-    enabled: !isOwner && guestsQ.isSuccess && (stats.rented > 0 || sponsorRow > 0),
+    queryKey: ["grid-fill", host.id, isOwner, stats.rented, sponsorRow, exclude.join(",")],
+    enabled: guestsQ.isSuccess && (stats.rented > 0 || sponsorRow > 0),
     staleTime: 60_000,
     queryFn: async () => {
       const rentAds = (await pickSponsors("hosts", host.tags, exclude, stats.rented)).map(toCard);
+      // Owner preview: only the paying sponsors renting the slots, no random filler.
+      if (isOwner) return { rent: rentAds, bottom: [] as FillCard[] };
       const hostme = (await pickSponsors("hostme", host.tags, exclude, sponsorRow)).map(toCard);
       const ex2 = [...exclude, ...rentAds.map((c) => c.hostId), ...hostme.map((c) => c.hostId)];
       const missing = stats.rented - rentAds.length + (sponsorRow - hostme.length);
@@ -90,18 +92,30 @@ export function GuestGrid({ host, isOwner, pinnedRef }: { host: Host; isOwner: b
           if (s.kind === "guest") {
             return <HostCard key={s.guest.id} slug={s.guest.slug} name={s.guest.name} image={s.guest.image_url} views={s.guest.views} refId={host.id} />;
           }
+          const c = rentCards[s.rentIndex];
           if (isOwner) {
+            if (c) {
+              return (
+                <HostCard key={c.key} slug={c.slug} name={c.name} image={c.image} views={c.views} className="ring-1 ring-gold/50">
+                  <span
+                    title="Rented slot"
+                    className="pointer-events-none absolute right-2 top-2 inline-flex items-center rounded-full bg-gold-gradient p-1 text-gold-foreground shadow-gold"
+                  >
+                    <Store className="h-3.5 w-3.5" />
+                  </span>
+                </HostCard>
+              );
+            }
             return (
               <div
                 key={`rent-${s.position}`}
-                title="Rented slot"
+                title="Rented slot — waiting for a sponsor"
                 className="flex aspect-[16/9] items-center justify-center rounded-xl border-2 border-dashed border-gold/50 bg-gold-soft text-gold"
               >
                 <Store className="h-7 w-7" />
               </div>
             );
           }
-          const c = rentCards[s.rentIndex];
           if (!c) return <div key={`rent-${s.position}`} className="aspect-[16/9] animate-pulse rounded-xl bg-muted" />;
           return (
             <HostCard
