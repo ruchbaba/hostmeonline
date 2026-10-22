@@ -14,6 +14,7 @@ import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as PaymentSuccessRouteImport } from './routes/payment-success'
+import { Route as PayoutsRouteImport } from './routes/payouts'
 import { Route as WriteRouteImport } from './routes/write'
 import { Route as EmbedSlugRouteImport } from './routes/embed.$slug'
 import { Route as ApiPublicBannerSlugRouteImport } from './routes/api/public/banner/$slug'
@@ -44,6 +45,11 @@ const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
   path: '/payment-success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PayoutsRoute = PayoutsRouteImport.update({
+  id: '/payouts',
+  path: '/payouts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WriteRoute = WriteRouteImport.update({
   id: '/write',
   path: '/write',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/messages': typeof MessagesRoute
   '/payment-success': typeof PaymentSuccessRoute
+  '/payouts': typeof PayoutsRoute
   '/write': typeof WriteRoute
   '/embed/$slug': typeof EmbedSlugRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/messages': typeof MessagesRoute
   '/payment-success': typeof PaymentSuccessRoute
+  '/payouts': typeof PayoutsRoute
   '/write': typeof WriteRoute
   '/embed/$slug': typeof EmbedSlugRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/messages': typeof MessagesRoute
   '/payment-success': typeof PaymentSuccessRoute
+  '/payouts': typeof PayoutsRoute
   '/write': typeof WriteRoute
   '/embed/$slug': typeof EmbedSlugRoute
   '/api/public/banner/$slug': typeof ApiPublicBannerSlugRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/messages'
     | '/payment-success'
+    | '/payouts'
     | '/write'
     | '/embed/$slug'
     | '/api/public/banner/$slug'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/messages'
     | '/payment-success'
+    | '/payouts'
     | '/write'
     | '/embed/$slug'
     | '/api/public/banner/$slug'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/messages'
     | '/payment-success'
+    | '/payouts'
     | '/write'
     | '/embed/$slug'
     | '/api/public/banner/$slug'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   MessagesRoute: typeof MessagesRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
+  PayoutsRoute: typeof PayoutsRoute
   WriteRoute: typeof WriteRoute
   EmbedSlugRoute: typeof EmbedSlugRoute
   ApiPublicBannerSlugRoute: typeof ApiPublicBannerSlugRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PaymentSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payouts': {
+      id: '/payouts'
+      path: '/payouts'
+      fullPath: '/payouts'
+      preLoaderRoute: typeof PayoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/write': {
       id: '/write'
       path: '/write'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   MessagesRoute: MessagesRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
+  PayoutsRoute: PayoutsRoute,
   WriteRoute: WriteRoute,
   EmbedSlugRoute: EmbedSlugRoute,
   ApiPublicBannerSlugRoute: ApiPublicBannerSlugRoute,

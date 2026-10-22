@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, FileText, Lock, LockOpen, LogIn, LogOut, Mail, MessageSquare, Plus, Sparkles, User } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronDown, FileText, Wallet, Lock, LockOpen, LogIn, LogOut, Mail, MessageSquare, Plus, Sparkles, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -152,6 +152,16 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
     navigate({ to: "/", replace: true });
   };
 
+  const pendingPayouts = useQuery({
+    queryKey: ["payouts", "pending-count"],
+    enabled: !!me?.isAdmin,
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const { count } = await supabase.from("payout_requests").select("id", { count: "exact", head: true }).eq("status", "pending");
+      return count ?? 0;
+    },
+  });
+
   const top = orderedHosts[0];
   const locked = multi && prefs.lockedHostId === top?.id;
 
@@ -217,6 +227,16 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
                 {p.title}
               </Link>
             ))}
+          <Link
+            to="/payouts"
+            onClick={close}
+            className={cn("press flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent", (pendingPayouts.data ?? 0) > 0 && "text-gold")}
+          >
+            <Wallet className="h-4 w-4" /> Payout requests
+            {(pendingPayouts.data ?? 0) > 0 && (
+              <span className="ml-auto rounded-full bg-gold px-2 text-xs font-bold text-gold-foreground">{pendingPayouts.data}</span>
+            )}
+          </Link>
         </>
       )}
       <Link
