@@ -19,6 +19,7 @@ import { STATIC_PAGES } from "@/lib/static-pages";
 import { cn } from "@/lib/utils";
 import { WaitingEmail } from "./WaitingEmail";
 import { TestModeNote } from "./SponsorMenu";
+import { TickingMoney } from "./TickingMoney";
 
 export function UserMenu() {
   const { user, ready } = useMe();
@@ -161,9 +162,10 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
           <button onClick={() => openHost(h)} className="press min-w-0 flex-1 truncate px-3 py-2 text-left text-sm font-medium">
             {h.is_home ? "Hostme (home)" : h.name}
           </button>
-          {multi && (me?.balances[h.id] ?? 0) > 0 && (
-            <span className="text-xs tabular-nums text-gold">{usd(me!.balances[h.id], 3)}</span>
-          )}
+          <TickingMoney
+            value={me?.balances[h.id] ?? 0}
+            className={cn("shrink-0 px-1 text-xs font-semibold tabular-nums", (me?.balances[h.id] ?? 0) > 0 ? "text-gold" : "text-muted-foreground")}
+          />
           {i === 0 && multi && (
             <button
               onClick={() => updatePrefs(() => ({ lockedHostId: locked ? null : h.id, selectedHostId: h.id }))}

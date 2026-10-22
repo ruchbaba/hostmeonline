@@ -8,7 +8,6 @@ import { compact } from "@/lib/format";
 import { usePrefs } from "@/lib/prefs";
 import { cn } from "@/lib/utils";
 import { Frame169 } from "./Banner";
-import { TickingMoney } from "./TickingMoney";
 import { ChangeImageDialog, InviteDialog, LinkDialog, MessageDialog, ShareDialog, SpyDialog, StatsDialog } from "./HostDialogs";
 
 type Open = null | "link" | "spy" | "views" | "stars" | "entries" | "invite" | "share" | "message" | "change";
@@ -35,7 +34,7 @@ function Chip({ className, onClick, children, label, active }: { className?: str
 
 export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) {
   const [open, setOpen] = useState<Open>(null);
-  const { user, acting, me } = useMe();
+  const { user, acting } = useMe();
   const prefs = usePrefs();
   const close = () => setOpen(null);
 
@@ -56,7 +55,6 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
     },
   });
   const spying = !isOwner && (user ? !!spyQ.data : !!prefs.spying[host.id]);
-  const balance = isOwner ? (me?.balances[host.id] ?? 0) : 0;
   const centerClickable = isOwner || !!host.destination_url;
 
   return (
@@ -99,11 +97,6 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
           <Chip className="bottom-3 right-3" label="Send Message" onClick={() => setOpen("message")}>
             <Mail />
           </Chip>
-        )}
-        {isOwner && balance > 0 && (
-          <span className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-gold-gradient px-3 py-1 text-xs font-bold text-gold-foreground shadow-gold">
-            <TickingMoney value={balance} />
-          </span>
         )}
       </Frame169>
 
