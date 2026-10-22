@@ -34,7 +34,7 @@ function Chip({ className, onClick, children, label, active }: { className?: str
 
 export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) {
   const [open, setOpen] = useState<Open>(null);
-  const { user, acting, me } = useMe();
+  const { user, acting } = useMe();
   const prefs = usePrefs();
   const close = () => setOpen(null);
 
