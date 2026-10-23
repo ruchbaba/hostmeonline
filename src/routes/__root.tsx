@@ -16,6 +16,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { MeProvider } from "@/hooks/use-me";
 import { AppHeader } from "@/components/hostme/AppHeader";
+import { applyTheme, readTheme } from "@/lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -102,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -117,6 +118,9 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const isEmbed = useRouterState({ select: (s) => s.location.pathname.startsWith("/embed") });
+  useEffect(() => {
+    if (!isEmbed && readTheme() === "light") applyTheme("light");
+  }, [isEmbed]);
 
   return (
     <QueryClientProvider client={queryClient}>
