@@ -11,6 +11,7 @@ import { expandTerms } from "@/lib/tags";
 import { compact } from "@/lib/format";
 import { SEARCH_EVENT } from "@/lib/prefs";
 import { HostCard } from "./Banner";
+import { ThemeToggle } from "./ThemeToggle";
 
 export const FOOTER_SLOGAN = "Every banner is a window to somewhere.";
 
@@ -114,19 +115,28 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
     getNextPageParam: (last) => last.next,
   });
 
+  // Load more only while the user is actively scrolling, so the slogan and
+  // theme toggle stay reachable when they stop.
   const sentinel = useRef<HTMLDivElement>(null);
+  const feedRef = useRef(feed);
+  feedRef.current = feed;
   useEffect(() => {
-    const el = sentinel.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      (e) => {
-        if (e[0]?.isIntersecting && feed.hasNextPage && !feed.isFetchingNextPage) void feed.fetchNextPage();
-      },
-      { rootMargin: "600px" },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [feed]);
+    let last = 0;
+    const check = () => {
+      const el = sentinel.current;
+      const f = feedRef.current;
+      if (!el || !f.hasNextPage || f.isFetchingNextPage) return;
+      if (el.getBoundingClientRect().top < window.innerHeight + 400) void f.fetchNextPage();
+    };
+    const onScroll = () => {
+      const now = Date.now();
+      if (now - last < 150) return;
+      last = now;
+      check();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const cards = (feed.data?.pages ?? []).flatMap((p) => p.cards);
   const hasFilters = filters.views + filters.stars + filters.entries > 0;
@@ -235,7 +245,10 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
         <p className="text-center text-sm text-muted-foreground">{query ? "No matching hosts yet." : "New hosts will appear here."}</p>
       )}
       <div ref={sentinel} className="h-1" />
-      <p className="pt-6 text-center font-display text-lg text-muted-foreground">{FOOTER_SLOGAN}</p>
+      <div className="flex justify-center pt-6">
+        <ThemeToggle />
+      </div>
+      <p className="pt-3 text-center font-display text-lg text-muted-foreground">{FOOTER_SLOGAN}</p>
 
       <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
         <DialogContent className="max-w-sm">
