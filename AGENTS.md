@@ -17,3 +17,4 @@
 - Fire-and-forget Supabase calls (view/impression tracking) go through `fire()` in `src/lib/api.ts` — why: query builders are lazy and `void supabase.rpc(...)` never sends a request.
 - Guide-page banners store live embeds origin-free as `/embed/<slug>` (parsed by `src/lib/embed-code.ts`) — why: the same value works on preview, published and custom domains.
 - Host payouts are manual: `request_payout` moves every owned page balance into one `payout_requests` row (per-page `breakdown`), and only the admin's `decide_payout` marks it paid or rejects it (reject restores the breakdown) — why: no payout API; the owner sends money in PayPal by hand.
+- Search by meaning: `expandTerms` in `src/lib/tags.ts` expands typed words into whole tag families (word forms, compounds, small typos), and `search_hosts` ranks exact tag/name hits first, then family/fuzzy hits — why: results still appear when no tag matches exactly; add categories by editing FAMILIES.
