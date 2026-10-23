@@ -218,7 +218,7 @@ function SponsorDialog({ kind, open, onClose }: { kind: "hosts" | "hostme"; open
         <p className="text-sm text-muted-foreground">
           Banner and tags from <span className="text-foreground">{acting?.name}</span>
         </p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className={`grid gap-2 ${kind === "hosts" ? "grid-cols-3" : "grid-cols-2"}`}>
           <Stat label="Remaining" value={compact(current?.remaining_impressions ?? 0)} />
           <Stat
             label="In Hostme"
@@ -229,15 +229,17 @@ function SponsorDialog({ kind, open, onClose }: { kind: "hosts" | "hostme"; open
               </span>
             }
           />
-          <Stat
-            label="Shared"
-            value={
-              <span className="inline-flex items-center gap-1">
-                <Sparkles className="h-4 w-4 text-suggest" />
-                {compact(current?.shared_impressions ?? 0)}
-              </span>
-            }
-          />
+          {kind === "hosts" && (
+            <Stat
+              label="Shared"
+              value={
+                <span className="inline-flex items-center gap-1">
+                  <Sparkles className="h-4 w-4 text-suggest" />
+                  {compact(current?.shared_impressions ?? 0)}
+                </span>
+              }
+            />
+          )}
         </div>
         {mine.length > 1 && (
           <ul className="space-y-1 text-xs text-muted-foreground">
