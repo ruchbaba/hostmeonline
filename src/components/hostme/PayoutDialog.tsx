@@ -16,6 +16,8 @@ export type PayoutRow = {
   paypal_email: string;
   amount_usd: number;
   breakdown: Record<string, number>;
+  /** Different visitor connections that produced the earnings (admin review signal). */
+  visitor_count: number;
   status: "pending" | "paid" | "rejected";
   created_at: string;
   decided_at: string | null;
