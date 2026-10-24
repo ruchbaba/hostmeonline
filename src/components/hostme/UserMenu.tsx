@@ -216,11 +216,11 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
             <ChevronDown className={cn("ml-auto h-4 w-4 transition-transform", staticOpen && "rotate-180")} />
           </button>
           {staticOpen &&
-            STATIC_PAGES.map((p) => (
+            (staticPages.data ?? STATIC_PAGES.map((p) => ({ key: p.key, slug: p.key, title: p.title }))).map((p) => (
               <Link
                 key={p.key}
                 to="/$slug"
-                params={{ slug: p.key }}
+                params={{ slug: p.slug }}
                 onClick={close}
                 className="press block rounded-md py-1.5 pl-10 pr-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
               >
