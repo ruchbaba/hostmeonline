@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, ExternalLink, X } from "lucide-react";
+import { Check, Copy, ExternalLink, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -103,6 +103,9 @@ function PayoutsPage() {
           <div key={r.id} className="space-y-2 rounded-xl border bg-card p-3">
             <div className="flex items-center justify-between gap-2">
               <span className="font-display text-xl font-bold tabular-nums text-gold">{usd(Number(r.amount_usd), 3)}</span>
+              <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground" title="Different visitors who earned this money">
+                <Users className="h-3.5 w-3.5" /> {r.visitor_count}
+              </span>
               <PayoutStatus status={r.status} />
             </div>
             <div className="flex items-center gap-2">

@@ -57,6 +57,13 @@
       "when": 1792751149987,
       "tag": "0007_search_related_names",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792813372010,
+      "tag": "0008_harden_host_earnings",
+      "breakpoints": true
     }
   ]
 }
