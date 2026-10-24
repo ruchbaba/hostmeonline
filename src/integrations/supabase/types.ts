@@ -420,6 +420,7 @@ export type Database = {
           paypal_email: string
           status: string
           user_id: string
+          visitor_count: number
         }
         Insert: {
           amount_usd: number
@@ -430,6 +431,7 @@ export type Database = {
           paypal_email: string
           status?: string
           user_id: string
+          visitor_count?: number
         }
         Update: {
           amount_usd?: number
@@ -440,6 +442,7 @@ export type Database = {
           paypal_email?: string
           status?: string
           user_id?: string
+          visitor_count?: number
         }
         Relationships: []
       }
