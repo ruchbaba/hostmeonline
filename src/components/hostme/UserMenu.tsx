@@ -134,6 +134,14 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
   const goStart = useGoStart();
   const [buyOpen, setBuyOpen] = useState(false);
   const [staticOpen, setStaticOpen] = useState(false);
+  const staticPages = useQuery({
+    queryKey: ["static-pages-menu"],
+    enabled: staticOpen,
+    queryFn: async () => {
+      const { data } = await supabase.from("static_pages").select("key, slug, title").order("sort");
+      return data ?? [];
+    },
+  });
   const multi = orderedHosts.length > 1;
   const freeSlots = me ? Math.max(0, me.quota - me.ownedPages) : 0;
 
