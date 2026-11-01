@@ -14,6 +14,24 @@ describe("parseEmbedCode", () => {
 
   it("rejects text that is not an embed", () => {
     expect(parseEmbedCode("https://example.com/banner.webp")).toBeNull();
+    expect(parseEmbedCode("https://example.com/some-page")).toBeNull();
+  });
+
+  it("accepts the shared page link from the big Copy button", () => {
+    expect(parseEmbedCode("https://banner-buddy-exchange.lovable.app/lion-e7158?src=embed")).toBe("lion-e7158");
+    expect(parseEmbedCode("https://banner-buddy-exchange.lovable.app/?src=embed")).toBe("hostme");
+  });
+});
+
+describe("shareBundle", () => {
+  it("builds every share format from the public address", () => {
+    const b = shareBundle({ origin: "https://hostme.app", slug: "lion", name: "Lion", isHome: false });
+    expect(b.plain).toBe("https://hostme.app/lion?src=embed");
+    expect(b.iframe).toContain('src="https://hostme.app/embed/lion"');
+    expect(b.html).toContain('href="https://hostme.app/lion?src=embed"');
+    expect(b.html).toContain('src="https://hostme.app/api/public/banner/lion"');
+    expect(parseEmbedCode(b.iframe)).toBe("lion");
+    expect(parseEmbedCode(b.html)).toBe("lion");
   });
 });
 
