@@ -563,11 +563,13 @@ export type Database = {
       }
       static_pages: {
         Row: {
+          active: boolean
           banner1_link: string
           banner1_url: string
           banner2_link: string
           banner2_url: string
           body: string
+          host_id: string | null
           key: string
           slug: string
           sort: number
@@ -576,11 +578,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean
           banner1_link?: string
           banner1_url?: string
           banner2_link?: string
           banner2_url?: string
           body?: string
+          host_id?: string | null
           key: string
           slug: string
           sort?: number
@@ -589,11 +593,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean
           banner1_link?: string
           banner1_url?: string
           banner2_link?: string
           banner2_url?: string
           body?: string
+          host_id?: string | null
           key?: string
           slug?: string
           sort?: number
@@ -601,7 +607,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "static_pages_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "hosts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stripe_checkouts: {
         Row: {
@@ -696,6 +710,7 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_id: string }; Returns: string }
+      admin_stats: { Args: never; Returns: Json }
       buy_extra_page: { Args: never; Returns: string }
       buy_extra_slot: { Args: { p_host: string }; Returns: string }
       buy_impressions: {
@@ -752,6 +767,7 @@ export type Database = {
         }
       }
       email_status: { Args: { p_email: string }; Returns: string }
+      ensure_host_page: { Args: { p_host: string }; Returns: string }
       esc_html: { Args: { p: string }; Returns: string }
       fulfill_checkout: {
         Args: { p_mode: string; p_session: string }
