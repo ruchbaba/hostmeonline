@@ -45,13 +45,65 @@ export function LinkDialog({ host, open, onClose, isOwner }: Base & { isOwner: b
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [url, setUrl] = useState(host.destination_url ?? "");
+  const [busy, setBusy] = useState(false);
+  const page = useHostPage(host.id, open && isOwner);
+  const active = !!page.data?.active;
+
+  const togglePage = async () => {
+    setBusy(true);
+    try {
+      const { data: slug, error } = await supabase.rpc("ensure_host_page", { p_host: host.id });
+      if (error || !slug) throw new Error("Could not open your webpage");
+      const { error: upErr } = await supabase.from("static_pages").update({ active: !active }).eq("host_id", host.id);
+      if (upErr) throw upErr;
+      await qc.invalidateQueries({ queryKey: hostPageKey(host.id) });
+      toast.success(active ? "Your own link is used again" : "Your given webpage is now your banner's link");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not update");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openPage = async () => {
+    const slug = page.data?.slug ?? (await supabase.rpc("ensure_host_page", { p_host: host.id })).data;
+    if (!slug) return toast.error("Could not open your webpage");
+    await qc.invalidateQueries({ queryKey: hostPageKey(host.id) });
+    onClose();
+    window.location.assign(`/${slug}`);
+  };
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="font-display">Visit my Webpage</DialogTitle>
         </DialogHeader>
-        {host.destination_url && (
+        {isOwner && (
+          <div className="space-y-2">
+            <button
+              type="button"
+              disabled={busy}
+              aria-pressed={active}
+              onClick={() => void togglePage()}
+              className={cn(
+                "press flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors",
+                active ? "border-gold bg-gold-soft text-gold" : "border-border text-muted-foreground hover:border-gold/40",
+              )}
+            >
+              <FileText className="h-5 w-5 shrink-0" />
+              <span className="flex-1 leading-snug">
+                <b className={cn("block", active ? "text-gold" : "text-foreground")}>Set an external link to your banner</b>
+                Activate your given webpage or set up your own link
+              </span>
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className={cn("h-3 w-3 shrink-0 rounded-full", active ? "bg-gold" : "bg-muted")} />}
+            </button>
+            <Button variant="outline" className="w-full" onClick={() => void openPage()}>
+              <FileText /> {page.data ? "Open my webpage" : "Create my webpage"}
+            </Button>
+          </div>
+        )}
+        {host.destination_url && !active && (
           <Button asChild variant="gold">
             <a href={host.destination_url} target="_blank" rel="noopener noreferrer">
               <Globe /> Visit my Webpage
@@ -59,6 +111,7 @@ export function LinkDialog({ host, open, onClose, isOwner }: Base & { isOwner: b
           </Button>
         )}
         {isOwner &&
+          !active &&
           (editing ? (
             <form
               className="flex gap-2"
@@ -74,14 +127,14 @@ export function LinkDialog({ host, open, onClose, isOwner }: Base & { isOwner: b
                 toast.success("Link saved");
               }}
             >
-              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://your-site.com" />
+              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://your-site.com" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
               <Button type="submit" size="icon" aria-label="Save link">
                 <Check />
               </Button>
             </form>
           ) : (
             <Button variant="outline" onClick={() => setEditing(true)}>
-              <Pencil /> Edit link
+              <Pencil /> {host.destination_url ? "Edit my own link" : "Set up my own link"}
             </Button>
           ))}
       </DialogContent>
