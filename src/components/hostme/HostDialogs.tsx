@@ -1,20 +1,22 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, Globe, Loader2, Pencil, Send, Share2, Trash2, UserPlus } from "lucide-react";
+import { Check, Code2, Copy, FileText, Globe, Loader2, Pencil, Send, Share2, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { useMe } from "@/hooks/use-me";
 import { useBannerUpload } from "@/hooks/use-banner-upload";
+import { hostPageKey, useHostPage } from "@/hooks/use-host-page";
 import { fetchGuests, qk, type Host } from "@/lib/api";
-import { absoluteUrl } from "@/lib/image";
 import { normalizeUrl } from "@/lib/format";
-import { forgetReturning, getPrefs, requestStartHost, updatePrefs, usePrefs } from "@/lib/prefs";
+import { shareBundle } from "@/lib/embed-code";
+import { browserPublicOrigin } from "@/lib/public-origin";
+import { forgetReturning, getPrefs, requestStartHost, updatePrefs } from "@/lib/prefs";
+import { cn } from "@/lib/utils";
 import { BannerLoop } from "./BannerLoop";
 import { ImageCanvas, type ImageCanvasHandle } from "./ImageCanvas";
 
@@ -43,6 +45,7 @@ function invalidateHost(qc: ReturnType<typeof useQueryClient>, host: Host) {
 
 export function LinkDialog({ host, open, onClose, isOwner }: Base & { isOwner: boolean }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [url, setUrl] = useState(host.destination_url ?? "");
   const [busy, setBusy] = useState(false);
@@ -70,7 +73,7 @@ export function LinkDialog({ host, open, onClose, isOwner }: Base & { isOwner: b
     if (!slug) return toast.error("Could not open your webpage");
     await qc.invalidateQueries({ queryKey: hostPageKey(host.id) });
     onClose();
-    window.location.assign(`/${slug}`);
+    navigate({ to: "/$slug", params: { slug } });
   };
 
   return (
