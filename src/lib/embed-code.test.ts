@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { embedSlugOf, embedValue, parseEmbedCode } from "./embed-code";
+import { embedSlugOf, embedValue, parseEmbedCode, shareBundle } from "./embed-code";
 
 describe("parseEmbedCode", () => {
   it("reads the slug from the iframe code copied from the share button", () => {
