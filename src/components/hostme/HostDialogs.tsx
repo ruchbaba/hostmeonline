@@ -143,97 +143,22 @@ export function LinkDialog({ host, open, onClose, isOwner }: Base & { isOwner: b
 }
 
 export function SpyDialog({ host, open, onClose, isOwner }: Base & { isOwner: boolean }) {
-  const { user } = useMe();
-  const prefs = usePrefs();
-  const qc = useQueryClient();
-  const [email, setEmail] = useState("");
   const images = useLoopImages(host, open);
-  const mySpy = useQuery({
-    queryKey: ["spying", host.id, user?.id ?? null],
-    enabled: open && !!user && !isOwner,
-    queryFn: async () => {
-      const { data } = await supabase.from("spies").select("id").eq("host_id", host.id).maybeSingle();
-      return !!data;
-    },
-  });
-  const spying = user ? !!mySpy.data : !!prefs.spying[host.id];
-
-  if (isOwner) {
-    return (
-      <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="font-display">{host.auto_spy_guests ? "Stop to Spy my Guests" : "Auto Spy all my Guests"}</DialogTitle>
-            <DialogDescription>Get an email with a preview whenever one of your guests changes their banner.</DialogDescription>
-          </DialogHeader>
-          <BannerLoop images={images} />
-          <label className="flex items-center justify-between rounded-lg border p-3 text-sm">
-            {host.auto_spy_guests ? "Stop to Spy my Guests" : "Auto Spy all my Guests"}
-            <Switch
-              checked={host.auto_spy_guests}
-              onCheckedChange={async (v) => {
-                const { error } = await supabase.from("hosts").update({ auto_spy_guests: v }).eq("id", host.id);
-                if (error) return toast.error(error.message);
-                await invalidateHost(qc, host);
-              }}
-            />
-          </label>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle className="font-display">{spying ? <span className="text-gold">Spy</span> : "Spy on this host for updates"}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 font-display">
+            {isOwner ? "Auto Spy all my Guests" : "Spy on this host for updates"}
+            <span className="rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gold">Coming soon</span>
+          </DialogTitle>
           <DialogDescription>
-            {spying
-              ? "You'll get an email preview whenever this Host changes their banner or welcomes new guests."
-              : "Receive automatic alerts with a preview of the new banner when this Host's banner or guests change."}
+            {isOwner
+              ? "Soon you'll get an email preview whenever one of your guests changes their banner."
+              : "Soon you'll get an email preview whenever this Host changes their banner or welcomes new guests."}
           </DialogDescription>
         </DialogHeader>
-        {spying ? (
-          <>
-            <BannerLoop images={images} />
-            <Button
-              variant="outline"
-              onClick={async () => {
-                await supabase.rpc("stop_spy", { p_host: host.id, p_email: prefs.spying[host.id] ?? "" });
-                updatePrefs((p) => {
-                  const s = { ...p.spying };
-                  delete s[host.id];
-                  return { spying: s };
-                });
-                await qc.invalidateQueries({ queryKey: ["spying", host.id] });
-                await invalidateHost(qc, host);
-                onClose();
-              }}
-            >
-              Stop to Spy
-            </Button>
-          </>
-        ) : (
-          <form
-            className="space-y-2"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const { data, error } = await supabase.rpc("spy_on", { p_host: host.id, p_email: email });
-              if (error || data !== "ok") return toast.error("Enter a valid email");
-              if (!user) updatePrefs((p) => ({ spying: { ...p.spying, [host.id]: email.trim().toLowerCase() } }));
-              await qc.invalidateQueries({ queryKey: ["spying", host.id] });
-              await invalidateHost(qc, host);
-              toast.success("You're spying on this Host");
-            }}
-          >
-            {!user && <Input type="email" required placeholder="Your email" value={email} onChange={(e) => setEmail(e.target.value)} />}
-            <Button type="submit" variant="gold" className="w-full">
-              Spy
-            </Button>
-          </form>
-        )}
-        <p className="text-center text-[11px] text-muted-foreground">Email alerts are coming soon — your Spy is saved and will start sending once they launch.</p>
+        <BannerLoop images={images} />
       </DialogContent>
     </Dialog>
   );
@@ -458,56 +383,75 @@ export function MessageDialog({ host, open, onClose }: Base) {
   );
 }
 
-function CopyRow({ label, value }: { label: string; value: string }) {
-  const [done, setDone] = useState(false);
-  return (
-    <div className="space-y-1">
-      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <div className="flex gap-2">
-        <Input readOnly value={value} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
-        <Button
-          type="button"
-          size="icon"
-          variant="secondary"
-          aria-label={`Copy ${label}`}
-          onClick={async () => {
-            await navigator.clipboard.writeText(value);
-            setDone(true);
-            setTimeout(() => setDone(false), 1500);
-          }}
-        >
-          {done ? <Check /> : <Copy />}
-        </Button>
-      </div>
-    </div>
-  );
+async function copyBundle(html: string, plain: string) {
+  try {
+    if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([plain], { type: "text/plain" }),
+        }),
+      ]);
+      return;
+    }
+  } catch {
+    /* fall back to plain text below */
+  }
+  await navigator.clipboard.writeText(plain);
 }
 
 export function ShareDialog({ host, open, onClose }: Base) {
   const images = useLoopImages(host, open);
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const pageUrl = host.is_home ? `${origin}/?src=embed` : `${origin}/${host.slug}?src=embed`;
-  const iframe = `<iframe src="${origin}/embed/${host.slug}" title="${host.name} on Hostme" style="border:0;width:100%;max-width:480px;aspect-ratio:16/9;border-radius:12px" loading="lazy"></iframe>`;
-  const signature = `<a href="${pageUrl}"><img src="${origin}/api/public/banner/${host.slug}" alt="${host.name}" width="320" height="180" style="border-radius:8px;object-fit:cover"/></a>`;
+  const [done, setDone] = useState<null | "all" | "code">(null);
+  const bundle = shareBundle({ origin: browserPublicOrigin(), slug: host.slug, name: host.is_home ? "Hostme" : host.name, isHome: host.is_home });
+  const flash = (k: "all" | "code") => {
+    setDone(k);
+    setTimeout(() => setDone(null), 1800);
+  };
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">Share my banner</DialogTitle>
-          <DialogDescription>Your shared banner rotates you and your guests live — no need to re-paste when things change.</DialogDescription>
+          <DialogDescription>
+            One copy works everywhere: paste it in emails and signatures (shows your banner), social bios and chats (your link), or a Hostme guide page (live banner).
+          </DialogDescription>
         </DialogHeader>
         <BannerLoop images={images} />
-        <CopyRow label="Live embed" value={iframe} />
-        <CopyRow label="Email signature" value={signature} />
-        <CopyRow label="Social bio link" value={pageUrl} />
-        {typeof navigator !== "undefined" && "share" in navigator && (
+        <Button
+          variant="gold"
+          size="lg"
+          className="h-16 w-full text-lg"
+          onClick={async () => {
+            await copyBundle(bundle.html, bundle.plain);
+            flash("all");
+            toast.success("Copied — paste it anywhere");
+          }}
+        >
+          {done === "all" ? <Check /> : <Copy />} {done === "all" ? "Copied" : "Copy"}
+        </Button>
+        <div className="flex gap-2">
+          {typeof navigator !== "undefined" && "share" in navigator && (
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => void navigator.share({ title: host.name, text: `${host.name} on Hostme`, url: bundle.page }).catch(() => {})}
+            >
+              <Share2 /> Apps
+            </Button>
+          )}
           <Button
-            variant="gold"
-            onClick={() => void navigator.share({ title: host.name, text: `${host.name} on Hostme`, url: pageUrl }).catch(() => {})}
+            variant="outline"
+            className="flex-1"
+            onClick={async () => {
+              await navigator.clipboard.writeText(bundle.iframe);
+              flash("code");
+              toast.success("Website code copied");
+            }}
           >
-            <Share2 /> Share through apps
+            {done === "code" ? <Check /> : <Code2 />} Website code
           </Button>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );
