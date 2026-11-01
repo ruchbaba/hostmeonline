@@ -4,7 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Host } from "@/lib/api";
 import { qk } from "@/lib/api";
-import { usePrefs } from "@/lib/prefs";
+import { syncReturningName, usePrefs } from "@/lib/prefs";
 
 export interface MeData {
   email: string;
@@ -85,6 +85,12 @@ export function MeProvider({ children }: { children: ReactNode }) {
     enabled: !!user,
     refetchInterval: 15000,
   });
+
+  // Remembered "Welcome back" entries always carry the first-created page's name.
+  useEffect(() => {
+    const first = meQ.data?.hosts.slice().sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+    if (user?.email && first) syncReturningName(user.email, first.is_home ? "Hostme" : first.name, first.slug);
+  }, [meQ.data, user?.email]);
 
   const value = useMemo<MeCtx>(() => {
     const me = user ? (meQ.data ?? null) : null;
