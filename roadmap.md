@@ -13,5 +13,30 @@
 - [x] Real payments via user's own Stripe key — checkout for extra page, guest slot, both impression packs (Stripe currently in test/sandbox mode)
 - [x] Visitors' banner center-click opens the external page directly
 - [x] Payouts: coin menu earnings → PayPal payout request (whole balance); admin Payout requests page with Mark paid / Reject
+- [x] Guide pages: editable link field, bold slogan, bold/size formatting
+- [x] Safety: host earnings capped per visitor connection; payout requests show visitor count
+- [x] Search by related meaning (tag families) — done earlier
+- [x] Sponsor with Hostme hides the Shared counter — done earlier
+
+## New batch (Nov 1)
+- [ ] Homepage: remove guest grid; main image clickable with owner-set link
+- [ ] Autocomplete suggestions: 12 per scroll like results
+- [ ] Shared banner (embed + live banners): no overlays at all; image click → host page / first guest slot
+- [ ] Returning-user quick login shows the first-created page's name
+- [ ] Email inputs: no spellcheck/autocorrect, proper email keyboard
+- [ ] Share button: one big Copy button with all share options together, works on any domain
+- [ ] Tags editor available on pages owned by the Hostme owner account
+- [ ] Host pages: Write Anything ticker above guest grid, below metadata row
+- [ ] Write Anything: smaller 16:9 banners with 2-3 lines beside, rest below; 500-letter limit; remove top banner+form header banner on /write (owner banner same size as guest grid); remove top-right overlay on ticker
+- [ ] Static pages: first banner at top; board keeps only the latest post per host (replace in database)
+- [ ] Editor: italic, underline, align left/center/right, color palette, more
+- [ ] Personal guide page per Host page (gift): toggle in the external-link popup; first spot = live banner preview; editable title (changes link), slogan, text, shared banner, board, footer search; deleted with the account; not in top-right menu
+- [ ] Owner: create (+) and delete (x) extra guide pages in the top-right menu (owner only)
+- [ ] Spy feature labelled "coming soon"
+- [ ] Owner: Payouts in the top-right menu; Payout page counters (accounts, spies, page purchases, slot purchases, each impression type)
+- [ ] Delete test accounts ruchhost1@hotmail.com and ruchhost@hotmail.com
+- [ ] Re-read attachments and close any gaps
+
+## Deferred
 - [ ] Real email delivery for message + Spy alerts — coming soon (user deferred)
 - [ ] Branded login email with banner preview — coming soon (user deferred)

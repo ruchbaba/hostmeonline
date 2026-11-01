@@ -35,7 +35,16 @@ function AuthPage() {
         return;
       }
       const { data: host } = await supabase.from("hosts").select("name, is_home").eq("slug", slug).maybeSingle();
-      if (data.user.email && host) rememberReturning({ name: host.is_home ? "Hostme" : host.name, email: data.user.email, slug });
+      // "Welcome back" always shows the name of the first page created on this email.
+      const { data: first } = await supabase
+        .from("hosts")
+        .select("name, slug, is_home")
+        .eq("owner_id", data.user.id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      const named = first ?? host;
+      if (data.user.email && named) rememberReturning({ name: named.is_home ? "Hostme" : named.name, email: data.user.email, slug: first?.slug ?? slug });
       if (host?.is_home) navigate({ to: "/", replace: true });
       else navigate({ to: "/$slug", params: { slug }, replace: true });
     };

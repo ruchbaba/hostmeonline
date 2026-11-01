@@ -1,8 +1,10 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { DoorOpen, Eye, Mail, RefreshCw, Share2, Star, UserPlus, UserSearch } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/hooks/use-me";
+import { useHostPage } from "@/hooks/use-host-page";
 import { qk, type Host } from "@/lib/api";
 import { compact } from "@/lib/format";
 import { usePrefs } from "@/lib/prefs";
@@ -55,7 +57,9 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
     },
   });
   const spying = !isOwner && (user ? !!spyQ.data : !!prefs.spying[host.id]);
-  const centerClickable = isOwner || !!host.destination_url;
+  const page = useHostPage(host.id);
+  // The gifted personal page, when switched on, replaces the own external link.
+  const pageSlug = page.data?.active ? page.data.slug : null;
 
   return (
     <>
@@ -67,10 +71,17 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
             onClick={() => setOpen("link")}
             className="absolute left-1/4 top-1/4 h-1/2 w-1/2 cursor-pointer rounded-xl"
           />
+        ) : pageSlug ? (
+          <Link
+            to="/$slug"
+            params={{ slug: pageSlug }}
+            aria-label="Visit webpage"
+            className="absolute left-1/4 top-1/4 h-1/2 w-1/2 cursor-pointer rounded-xl"
+          />
         ) : (
-          centerClickable && (
+          host.destination_url && (
             <a
-              href={host.destination_url!}
+              href={host.destination_url}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Visit webpage"

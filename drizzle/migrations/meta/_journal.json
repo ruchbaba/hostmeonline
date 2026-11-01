@@ -64,6 +64,13 @@
       "when": 1792813372010,
       "tag": "0008_harden_host_earnings",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793521999057,
+      "tag": "0009_personal_pages_board_stats",
+      "breakpoints": true
     }
   ]
 }

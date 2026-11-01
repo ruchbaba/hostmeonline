@@ -67,6 +67,16 @@ export function rememberReturning(u: ReturningUser) {
   }));
 }
 
+/** Keeps a remembered user's label on their first-created page name without reordering the list. */
+export function syncReturningName(email: string, name: string, slug: string) {
+  const p = read();
+  const hit = p.returning.find((r) => r.email.toLowerCase() === email.toLowerCase());
+  if (!hit || (hit.name === name && hit.slug === slug)) return;
+  updatePrefs((cur) => ({
+    returning: cur.returning.map((r) => (r.email.toLowerCase() === email.toLowerCase() ? { ...r, name, slug } : r)),
+  }));
+}
+
 export function forgetReturning(email: string) {
   updatePrefs((p) => ({ returning: p.returning.filter((r) => r.email.toLowerCase() !== email.toLowerCase()) }));
 }
