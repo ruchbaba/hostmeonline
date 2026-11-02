@@ -71,6 +71,13 @@
       "when": 1793521999057,
       "tag": "0009_personal_pages_board_stats",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793588923607,
+      "tag": "0010_board_one_post_per_account",
+      "breakpoints": true
     }
   ]
 }

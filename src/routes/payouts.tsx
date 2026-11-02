@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, ExternalLink, Users, X } from "lucide-react";
+import { Check, Copy, ExternalLink, FilePlus2, Gift, LayoutGrid, Megaphone, Sparkles, UserSearch, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/payouts")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Payout requests — Hostme" },
+      { title: "Payouts — Hostme" },
       { name: "description", content: "Hostme owner payout requests." },
       { property: "og:title", content: "Payout requests — Hostme" },
       { property: "og:description", content: "Hostme owner payout requests." },
@@ -76,6 +76,7 @@ function PayoutsPage() {
 
   return (
     <main className="mx-auto max-w-2xl space-y-3 px-3 py-4">
+      <AdminCounters />
       <h1 className="font-display text-2xl font-bold">Payout requests</h1>
       <p className="text-sm text-muted-foreground">
         Send each amount to the PayPal email in your PayPal account, then tap “Mark paid”. “Reject” puts the money back in the host's balance.
@@ -147,5 +148,48 @@ function PayoutsPage() {
         );
       })}
     </main>
+  );
+}
+
+interface AdminStats {
+  accounts: number;
+  spies: number;
+  extra_pages: number;
+  extra_slots: number;
+  impressions_hosts: number;
+  impressions_hostme: number;
+  gifts: number;
+}
+
+/** Owner dashboard counters: accounts, spies and every kind of purchase. */
+function AdminCounters() {
+  const q = useQuery({
+    queryKey: ["admin-stats"],
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("admin_stats");
+      return data as unknown as AdminStats | null;
+    },
+  });
+  const s = q.data;
+  const items: { label: string; value: number | undefined; icon: React.ReactNode }[] = [
+    { label: "Accounts created", value: s?.accounts, icon: <Users /> },
+    { label: "People spying", value: s?.spies, icon: <UserSearch /> },
+    { label: "Extra pages bought", value: s?.extra_pages, icon: <FilePlus2 /> },
+    { label: "Guest slots bought", value: s?.extra_slots, icon: <LayoutGrid /> },
+    { label: "Sponsor with Hosts packs", value: s?.impressions_hosts, icon: <Megaphone /> },
+    { label: "Sponsor with Hostme packs", value: s?.impressions_hostme, icon: <Sparkles /> },
+    { label: "Free Hostme gifts claimed", value: s?.gifts, icon: <Gift /> },
+  ];
+  return (
+    <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="App counters">
+      {items.map((i) => (
+        <div key={i.label} className="space-y-1 rounded-xl border bg-card p-3">
+          <span className="text-gold [&_svg]:h-4 [&_svg]:w-4">{i.icon}</span>
+          <p className="font-display text-2xl font-bold tabular-nums">{i.value ?? "—"}</p>
+          <p className="text-[11px] leading-tight text-muted-foreground">{i.label}</p>
+        </div>
+      ))}
+    </section>
   );
 }

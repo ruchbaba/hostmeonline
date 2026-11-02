@@ -9,8 +9,6 @@ import { compact, usd } from "@/lib/format";
 import { OPEN_START_KEY, START_EVENT } from "@/lib/prefs";
 import { HostBanner } from "./HostBanner";
 import { LiveTicker, StatusCard } from "./WriteAnything";
-import { GuestGrid } from "./GuestGrid";
-import { Invitations } from "./Invitations";
 import { FooterSearch } from "./FooterSearch";
 import { StartHostForm } from "./StartHostForm";
 import { BuyPageDialog } from "./UserMenu";
@@ -76,8 +74,6 @@ export function HomeView({ initial, refId, src }: { initial: Host; refId?: strin
         {isOwner ? <StatusCard host={host} isOwner /> : <LiveTicker />}
       </section>
 
-      <GuestGrid host={host} isOwner={isOwner} pinnedRef={refId} />
-      {isOwner && <Invitations host={host} />}
       <FooterSearch contextTags={host.tags} excludeIds={[host.id]} />
       {user && <BuyPageDialog open={buyOpen} onClose={() => setBuyOpen(false)} onReady={() => setBuyOpen(false)} />}
     </main>

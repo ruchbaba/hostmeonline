@@ -56,10 +56,15 @@ export function usePost(hostId: string) {
   });
 }
 
-function splitBody(body: string) {
-  if (body.length <= 160) return [body, ""];
-  const cut = body.lastIndexOf(" ", 160);
-  const i = cut > 80 ? cut : 160;
+export const WRITE_MAX = 500;
+const HEAD_CHARS = 90; // about 2-3 lines beside the small banner
+
+export function splitBody(body: string): [string, string] {
+  if (body.length <= HEAD_CHARS) return [body, ""];
+  const nl = body.indexOf("\n");
+  if (nl > 0 && nl <= HEAD_CHARS) return [body.slice(0, nl), body.slice(nl + 1).trimStart()];
+  const cut = body.lastIndexOf(" ", HEAD_CHARS);
+  const i = cut > 40 ? cut : HEAD_CHARS;
   return [body.slice(0, i), body.slice(i).trimStart()];
 }
 
@@ -69,7 +74,7 @@ export function PostBody({ image, name, body, className }: { image: string; name
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex gap-3">
-        <Frame169 src={image} alt={name} className="w-32 shrink-0 rounded-lg sm:w-40" />
+        <Frame169 src={image} alt={name} className="w-28 shrink-0 rounded-lg sm:w-36" />
         <div className="min-w-0">
           <p className="text-xs font-semibold text-gold">{name}</p>
           <p className="whitespace-pre-line text-sm leading-relaxed">{head}</p>
@@ -94,9 +99,8 @@ export function StatusCard({ host, isOwner, showEmpty = true }: { host: Host; is
   if (!post.data && !(isOwner && showEmpty)) return null;
   return (
     <Link to="/write" search={{ host: host.slug }} className="press block rounded-xl border bg-card p-3 hover:border-gold/40">
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2">
         <WriteBadge />
-        {post.data && <span className="text-[11px] text-muted-foreground underline-offset-2 hover:underline">history</span>}
       </div>
       {post.data ? (
         <p className="whitespace-pre-line text-sm leading-relaxed">{post.data.body}</p>
@@ -115,11 +119,8 @@ export function LiveTicker({ excludeHostId }: { excludeHostId?: string }) {
   if (!item) return null;
   return (
     <Link to="/write" className="press block rounded-xl border border-gold/20 bg-card p-3 hover:border-gold/40">
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2">
         <WriteBadge />
-        <span className="text-[11px] tabular-nums text-muted-foreground">
-          {index + 1}/{items.length}
-        </span>
       </div>
       <div key={item.host_id + index} className="hm-fade-in">
         <PostBody image={item.hosts.image_url} name={item.hosts.is_home ? "Hostme" : item.hosts.name} body={item.body} />
@@ -166,10 +167,12 @@ export function WriteForm() {
         await qc.invalidateQueries({ queryKey: qk.post(acting.id) });
       }}
     >
-      <Textarea rows={3} maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} placeholder={`Speak anything, ${acting.is_home ? "Hostme" : acting.name}…`} />
+      <Textarea rows={3} maxLength={WRITE_MAX} value={body} onChange={(e) => setBody(e.target.value)} placeholder={`Speak anything, ${acting.is_home ? "Hostme" : acting.name}…`} />
       <p className="text-xs text-muted-foreground">{WRITE_TIP}</p>
       <div className="flex items-center justify-between">
-        <span className="text-[11px] text-muted-foreground">A new post replaces your previous one.</span>
+        <span className="text-[11px] text-muted-foreground">
+          A new post replaces your previous one. <span className="tabular-nums">{body.length}/{WRITE_MAX}</span>
+        </span>
         <Button type="submit" variant="gold" size="sm" disabled={busy || !body.trim()}>
           <Send /> Post
         </Button>

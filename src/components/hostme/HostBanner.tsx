@@ -71,7 +71,7 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
             onClick={() => setOpen("link")}
             className="absolute left-1/4 top-1/4 h-1/2 w-1/2 cursor-pointer rounded-xl"
           />
-        ) : pageSlug ? (
+        ) : page.isPending ? null : pageSlug ? (
           <Link
             to="/$slug"
             params={{ slug: pageSlug }}

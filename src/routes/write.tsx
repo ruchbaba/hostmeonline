@@ -1,6 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMe } from "@/hooks/use-me";
-import { Frame169 } from "@/components/hostme/Banner";
 import { PostBody, WriteForm, usePostsFeed } from "@/components/hostme/WriteAnything";
 
 export const Route = createFileRoute("/write")({
@@ -19,11 +17,9 @@ export const Route = createFileRoute("/write")({
 });
 
 function WritePage() {
-  const { acting } = useMe();
   const feed = usePostsFeed(100);
   return (
     <main className="mx-auto max-w-3xl space-y-4 px-3 py-4">
-      {acting && <Frame169 src={acting.image_url} alt={acting.name} className="mx-auto w-1/2" />}
       <WriteForm />
       <div className="space-y-3">
         {(feed.data ?? []).map((p) => (

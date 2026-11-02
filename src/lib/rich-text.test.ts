@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseRich, wrapSelection } from "./rich-text";
+import { bulletLines, parseRich, plainText, wrapSelection } from "./rich-text";
 
 describe("parseRich", () => {
   it("makes **text** bold", () => {
@@ -20,6 +20,23 @@ describe("parseRich", () => {
     ]);
   });
 
+  it("supports italic, underline, alignment and palette colors", () => {
+    expect(parseRich("[i]a[/i][u]b[/u]")).toEqual([
+      { type: "style", style: "i", children: [{ type: "text", text: "a" }] },
+      { type: "style", style: "u", children: [{ type: "text", text: "b" }] },
+    ]);
+    expect(parseRich("[center]mid[/center]")).toEqual([{ type: "align", align: "center", children: [{ type: "text", text: "mid" }] }]);
+    expect(parseRich("[color=gold]g[/color]")).toEqual([{ type: "color", color: "gold", children: [{ type: "text", text: "g" }] }]);
+  });
+
+  it("only accepts web links and known colors", () => {
+    expect(parseRich("[url=https://hostme.app]go[/url]")).toEqual([
+      { type: "link", href: "https://hostme.app", children: [{ type: "text", text: "go" }] },
+    ]);
+    expect(parseRich("[url=javascript:alert(1)]x[/url]")).toEqual([{ type: "text", text: "[url=javascript:alert(1)]x[/url]" }]);
+    expect(parseRich("[color=orange]x[/color]")).toEqual([{ type: "text", text: "[color=orange]x[/color]" }]);
+  });
+
   it("keeps unclosed markers as plain text", () => {
     expect(parseRich("5 ** 2 and [lg]open")).toEqual([{ type: "text", text: "5 ** 2 and [lg]open" }]);
   });
@@ -32,5 +49,17 @@ describe("wrapSelection", () => {
 
   it("inserts a placeholder when nothing is selected", () => {
     expect(wrapSelection("ab", 1, 1, "[lg]", "[/lg]")).toEqual({ value: "a[lg]text[/lg]b", start: 5, end: 9 });
+  });
+});
+
+describe("bulletLines", () => {
+  it("bullets every selected line once", () => {
+    expect(bulletLines("one\ntwo\n• three", 0, 15).value).toBe("• one\n• two\n• three");
+  });
+});
+
+describe("plainText", () => {
+  it("strips the markers", () => {
+    expect(plainText("[center]**Hi** [color=red]there[/color][/center]")).toBe("Hi there");
   });
 });

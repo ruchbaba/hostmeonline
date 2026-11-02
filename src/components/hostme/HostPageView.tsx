@@ -44,8 +44,8 @@ export function HostPageView({ initial, refId, src }: { initial: Host; refId?: s
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-3 py-4">
       <HostBanner host={host} isOwner={isOwner} />
-      <StatusCard host={host} isOwner={isOwner} />
       <TagsRow host={host} isOwner={isOwner} />
+      <StatusCard host={host} isOwner={isOwner} />
       <GuestGrid host={host} isOwner={isOwner} pinnedRef={refId} />
       {isOwner && <Invitations host={host} />}
       <FooterSearch contextTags={host.tags} excludeIds={[host.id]} />

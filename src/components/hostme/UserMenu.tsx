@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, FileText, Wallet, Lock, LockOpen, LogIn, LogOut, Mail, MessageSquare, Plus, Sparkles, User } from "lucide-react";
+import { ChevronDown, FileText, Wallet, Lock, LockOpen, LogIn, LogOut, Mail, MessageSquare, Plus, Sparkles, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -138,10 +138,32 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
     queryKey: ["static-pages-menu"],
     enabled: staticOpen,
     queryFn: async () => {
-      const { data } = await supabase.from("static_pages").select("key, slug, title").order("sort");
+      // Personal pages that come with each Host page are reached from their banner, not from this menu.
+      const { data } = await supabase.from("static_pages").select("key, slug, title").is("host_id", null).order("sort");
       return data ?? [];
     },
   });
+  const createPage = async () => {
+    const tag = Math.random().toString(36).slice(2, 7);
+    const { data: last } = await supabase.from("static_pages").select("sort").is("host_id", null).order("sort", { ascending: false }).limit(1).maybeSingle();
+    const { error } = await supabase
+      .from("static_pages")
+      .insert({ key: `page-${tag}`, slug: `new-page-${tag}`, title: "New page", subtitle: "", body: "", sort: (last?.sort ?? 0) + 1 });
+    if (error) return toast.error("Could not create the page");
+    await qc.invalidateQueries({ queryKey: ["static-pages-menu"] });
+    close();
+    toast.success("New page created — tap Edit page to write it");
+    navigate({ to: "/$slug", params: { slug: `new-page-${tag}` } });
+  };
+
+  const deletePage = async (key: string, title: string) => {
+    if (!window.confirm(`Delete "${title}" and its community board forever?`)) return;
+    const { error } = await supabase.from("static_pages").delete().eq("key", key);
+    if (error) return toast.error("Could not delete the page");
+    await qc.invalidateQueries({ queryKey: ["static-pages-menu"] });
+    toast.success("Page deleted");
+  };
+
   const multi = orderedHosts.length > 1;
   const freeSlots = me ? Math.max(0, me.quota - me.ownedPages) : 0;
 
@@ -216,35 +238,48 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
       <div className="my-1 h-px bg-border" />
       {me?.isAdmin && (
         <>
-          <button
-            onClick={() => setStaticOpen((v) => !v)}
-            className="press flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-accent"
-          >
-            <FileText className="h-4 w-4" /> Static Pages
-            <ChevronDown className={cn("ml-auto h-4 w-4 transition-transform", staticOpen && "rotate-180")} />
-          </button>
-          {staticOpen &&
-            (staticPages.data ?? STATIC_PAGES.map((p) => ({ key: p.key, slug: p.key, title: p.title }))).map((p) => (
-              <Link
-                key={p.key}
-                to="/$slug"
-                params={{ slug: p.slug }}
-                onClick={close}
-                className="press block rounded-md py-1.5 pl-10 pr-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                {p.title}
-              </Link>
-            ))}
           <Link
             to="/payouts"
             onClick={close}
             className={cn("press flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent", (pendingPayouts.data ?? 0) > 0 && "text-gold")}
           >
-            <Wallet className="h-4 w-4" /> Payout requests
+            <Wallet className="h-4 w-4" /> Payouts
             {(pendingPayouts.data ?? 0) > 0 && (
               <span className="ml-auto rounded-full bg-gold px-2 text-xs font-bold text-gold-foreground">{pendingPayouts.data}</span>
             )}
           </Link>
+          <div className="flex items-center rounded-md hover:bg-accent">
+            <button
+              onClick={() => setStaticOpen((v) => !v)}
+              className="press flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-left text-sm"
+            >
+              <FileText className="h-4 w-4" /> Static Pages
+              <ChevronDown className={cn("ml-auto h-4 w-4 transition-transform", staticOpen && "rotate-180")} />
+            </button>
+            <button onClick={() => void createPage()} className="press rounded-md p-1.5 text-gold" aria-label="Create a static page">
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          {staticOpen &&
+            (staticPages.data ?? STATIC_PAGES.map((p) => ({ key: p.key, slug: p.key, title: p.title }))).map((p) => (
+              <div key={p.key} className="flex items-center rounded-md hover:bg-accent">
+                <Link
+                  to="/$slug"
+                  params={{ slug: p.slug }}
+                  onClick={close}
+                  className="press min-w-0 flex-1 truncate py-1.5 pl-10 pr-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {p.title}
+                </Link>
+                <button
+                  onClick={() => void deletePage(p.key, p.title)}
+                  className="press rounded-md p-1.5 text-muted-foreground hover:text-destructive"
+                  aria-label={`Delete ${p.title}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
         </>
       )}
       <Link
