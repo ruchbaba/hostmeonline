@@ -29,6 +29,18 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
       return (data as StaticPageRow) ?? initial;
     },
   }).data;
+  const personal = !!page.host_id;
+  // Personal pages open with their Host's live banner; admin guide pages with their first banner.
+  const owner = useQuery({
+    queryKey: ["host-of-page", page.host_id],
+    enabled: personal,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase.from("hosts").select("slug").eq("id", page.host_id!).maybeSingle();
+      return data?.slug ?? null;
+    },
+  });
+  const canEdit = !!me?.isAdmin || (personal && (me?.hosts ?? []).some((h) => h.id === page.host_id));
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(page);
   const [linkTouched, setLinkTouched] = useState(false);
@@ -64,6 +76,7 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
         qc.invalidateQueries({ queryKey: ["static", page.key] }),
         qc.invalidateQueries({ queryKey: ["slug-ssr"] }),
         qc.invalidateQueries({ queryKey: ["static-pages-menu"] }),
+        ...(page.host_id ? [qc.invalidateQueries({ queryKey: ["host-page", page.host_id] })] : []),
       ]);
       setEditing(false);
       toast.success(slug !== page.slug ? `Saved — new link /${slug}` : "Saved");
@@ -85,6 +98,7 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-3 py-6">
+      {personal ? owner.data && <LiveHostBanner slug={owner.data} /> : !editing && banner(page.banner1_url, page.banner1_link)}
       {editing ? (
         <div className="space-y-2">
           <div className="flex items-center rounded-md border border-input focus-within:ring-1 focus-within:ring-ring">
@@ -110,14 +124,16 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
             className="h-11 text-lg font-bold md:text-lg"
           />
           <RichTextEditor value={draft.body} onChange={(body) => setDraft((d) => ({ ...d, body }))} />
+          {!personal && (
+            <GuideBannerField
+              label="First banner"
+              url={draft.banner1_url}
+              link={draft.banner1_link}
+              onChange={(v) => setDraft((d) => ({ ...d, banner1_url: v.url, banner1_link: v.link }))}
+            />
+          )}
           <GuideBannerField
-            label="First banner"
-            url={draft.banner1_url}
-            link={draft.banner1_link}
-            onChange={(v) => setDraft((d) => ({ ...d, banner1_url: v.url, banner1_link: v.link }))}
-          />
-          <GuideBannerField
-            label="Second banner"
+            label={personal ? "Shared banner" : "Second banner"}
             url={draft.banner2_url}
             link={draft.banner2_link}
             onChange={(v) => setDraft((d) => ({ ...d, banner2_url: v.url, banner2_link: v.link }))}
@@ -132,14 +148,13 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
           <h1 className="font-display text-3xl font-bold">{page.title}</h1>
           {page.subtitle && <p className="text-xl font-bold leading-snug sm:text-2xl">{page.subtitle}</p>}
           <RichText text={page.body} />
-          {me?.isAdmin && (
+          {canEdit && (
             <Button variant="outline" size="sm" onClick={startEdit}>
               Edit page
             </Button>
           )}
         </header>
       )}
-      {!editing && banner(page.banner1_url, page.banner1_link)}
       <GuideBoard pageKey={page.key} />
       {!editing && banner(page.banner2_url, page.banner2_link)}
       <FooterSearch />
