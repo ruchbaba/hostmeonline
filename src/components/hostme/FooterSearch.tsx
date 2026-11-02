@@ -95,7 +95,23 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
             p_limit: FEED_GROUP,
             p_offset: offset,
           });
-      const hosts = ((hostsRes.data ?? []) as Host[]).filter((h) => !excludeIds.includes(h.id));
+      let hosts = ((hostsRes.data ?? []) as Host[]).filter((h) => !excludeIds.includes(h.id));
+      // Pre-search suggestions never run out: once every host was shown, start a fresh shuffled round
+      // so each scroll always brings a full group of FEED_GROUP cards.
+      if (!query && hosts.length < FEED_GROUP) {
+        const again = await supabase.rpc("discover_hosts", {
+          p_seed: `${seed}-${offset}`,
+          p_min_views: filters.views,
+          p_min_stars: filters.stars,
+          p_min_entries: filters.entries,
+          p_limit: FEED_GROUP,
+          p_offset: 0,
+        });
+        const pool = ((again.data ?? []) as Host[]).filter((h) => !excludeIds.includes(h.id));
+        const seen = new Set(hosts.map((h) => h.id));
+        const fresh = [...pool.filter((h) => !seen.has(h.id)), ...pool.filter((h) => seen.has(h.id))];
+        while (pool.length && hosts.length < FEED_GROUP) hosts = [...hosts, ...fresh].slice(0, FEED_GROUP);
+      }
       const sponsors = await pickSponsors("hostme", sponsorTags, excludeIds, sponsorSlotsPerGroup()).catch(() => []);
       const cards: FeedCard[] = [];
       let hi = 0;
@@ -106,10 +122,11 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
           cards.push({ key: `s-${s.campaign_id}-${offset}-${i}`, slug: s.slug, name: s.name, image: s.image_url, views: s.views, campaignId: s.campaign_id });
         } else if (hi < hosts.length) {
           const h = hosts[hi++];
-          cards.push({ key: `h-${h.id}-${offset}`, slug: h.slug, name: h.name, image: h.image_url, views: h.views });
+          cards.push({ key: `h-${h.id}-${offset}-${i}`, slug: h.slug, name: h.name, image: h.image_url, views: h.views });
         }
       }
       const fetched = (hostsRes.data ?? []).length;
+      if (!query) return { cards, next: cards.length ? offset + FEED_GROUP : null };
       return { cards, next: fetched < FEED_GROUP && hi >= hosts.length ? null : offset + Math.max(1, hi) };
     },
     getNextPageParam: (last) => last.next,
