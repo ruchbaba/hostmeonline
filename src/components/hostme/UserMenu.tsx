@@ -143,6 +143,27 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
       return data ?? [];
     },
   });
+  const createPage = async () => {
+    const tag = Math.random().toString(36).slice(2, 7);
+    const { data: last } = await supabase.from("static_pages").select("sort").is("host_id", null).order("sort", { ascending: false }).limit(1).maybeSingle();
+    const { error } = await supabase
+      .from("static_pages")
+      .insert({ key: `page-${tag}`, slug: `new-page-${tag}`, title: "New page", subtitle: "", body: "", sort: (last?.sort ?? 0) + 1 });
+    if (error) return toast.error("Could not create the page");
+    await qc.invalidateQueries({ queryKey: ["static-pages-menu"] });
+    close();
+    toast.success("New page created — tap Edit page to write it");
+    navigate({ to: "/$slug", params: { slug: `new-page-${tag}` } });
+  };
+
+  const deletePage = async (key: string, title: string) => {
+    if (!window.confirm(`Delete "${title}" and its community board forever?`)) return;
+    const { error } = await supabase.from("static_pages").delete().eq("key", key);
+    if (error) return toast.error("Could not delete the page");
+    await qc.invalidateQueries({ queryKey: ["static-pages-menu"] });
+    toast.success("Page deleted");
+  };
+
   const multi = orderedHosts.length > 1;
   const freeSlots = me ? Math.max(0, me.quota - me.ownedPages) : 0;
 
@@ -217,14 +238,28 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
       <div className="my-1 h-px bg-border" />
       {me?.isAdmin && (
         <>
-          <button
-            onClick={() => setStaticOpen((v) => !v)}
-            className="press flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-accent"
+          <Link
+            to="/payouts"
+            onClick={close}
+            className={cn("press flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent", (pendingPayouts.data ?? 0) > 0 && "text-gold")}
           >
-            <FileText className="h-4 w-4" /> Static Pages
-            <ChevronDown className={cn("ml-auto h-4 w-4 transition-transform", staticOpen && "rotate-180")} />
-          </button>
-
+            <Wallet className="h-4 w-4" /> Payouts
+            {(pendingPayouts.data ?? 0) > 0 && (
+              <span className="ml-auto rounded-full bg-gold px-2 text-xs font-bold text-gold-foreground">{pendingPayouts.data}</span>
+            )}
+          </Link>
+          <div className="flex items-center rounded-md hover:bg-accent">
+            <button
+              onClick={() => setStaticOpen((v) => !v)}
+              className="press flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-left text-sm"
+            >
+              <FileText className="h-4 w-4" /> Static Pages
+              <ChevronDown className={cn("ml-auto h-4 w-4 transition-transform", staticOpen && "rotate-180")} />
+            </button>
+            <button onClick={() => void createPage()} className="press rounded-md p-1.5 text-gold" aria-label="Create a static page">
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
           {staticOpen &&
             (staticPages.data ?? STATIC_PAGES.map((p) => ({ key: p.key, slug: p.key, title: p.title }))).map((p) => (
               <div key={p.key} className="flex items-center rounded-md hover:bg-accent">
@@ -245,16 +280,6 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
                 </button>
               </div>
             ))}
-          <Link
-            to="/payouts"
-            onClick={close}
-            className={cn("press flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent", (pendingPayouts.data ?? 0) > 0 && "text-gold")}
-          >
-            <Wallet className="h-4 w-4" /> Payout requests
-            {(pendingPayouts.data ?? 0) > 0 && (
-              <span className="ml-auto rounded-full bg-gold px-2 text-xs font-bold text-gold-foreground">{pendingPayouts.data}</span>
-            )}
-          </Link>
         </>
       )}
       <Link
