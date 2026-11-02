@@ -110,7 +110,7 @@ function EmbedPage() {
   if (!item) return null;
   // Every click lands on the sharing Host's page; a guest slide is pinned to its first guest slot.
   // Sponsor slides open the sponsor's own page.
-  const base = publicOrigin(origin || window.location.origin);
+  const base = publicOrigin(origin || (typeof window !== "undefined" ? window.location.origin : ""));
   const href = item.campaignId
     ? `${base}/${item.slug}?src=embed`
     : `${base}/${host.is_home ? "" : host.slug}?src=embed${item.key !== host.id ? `&ref=${item.key}` : ""}`;
