@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, FileText, Wallet, Lock, LockOpen, LogIn, LogOut, Mail, MessageSquare, Plus, Sparkles, User } from "lucide-react";
+import { ChevronDown, FileText, Wallet, Lock, LockOpen, LogIn, LogOut, Mail, MessageSquare, Plus, Sparkles, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
