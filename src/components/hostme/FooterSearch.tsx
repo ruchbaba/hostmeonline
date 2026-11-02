@@ -206,7 +206,7 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
             </form>
             {(sugg.data ?? []).length > 0 && prefix && (
               <div className="flex flex-wrap gap-1.5 px-2">
-                {(sugg.data ?? []).slice(0, 6).map((t) => (
+                {(sugg.data ?? []).slice(0, 12).map((t) => (
                   <button
                     key={t}
                     onClick={() => {
