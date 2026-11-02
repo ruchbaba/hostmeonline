@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getEmbedHost } from "@/lib/public.functions";
 import { fetchGuests, fire, pickSponsors } from "@/lib/api";
 import { useRotating } from "@/hooks/use-rotating";
 import { useImpression } from "@/hooks/use-impression";
-import { compact } from "@/lib/format";
+import { publicOrigin } from "@/lib/public-origin";
 import { Frame169 } from "@/components/hostme/Banner";
 
 const embedQuery = (slug: string) =>
@@ -88,7 +87,7 @@ function EmbedPage() {
     return list;
   }, [host, guestsQ.data, sponsorQ.data]);
 
-  const { item, index } = useRotating(slides, 5000);
+  const { item } = useRotating(slides, 5000);
 
   // Count one shared Sparkle impression for the host once the banner is fully seen for 1s.
   const ref = useImpression<HTMLAnchorElement>(() => {
@@ -109,30 +108,17 @@ function EmbedPage() {
   }, [item?.campaignId, host.id]);
 
   if (!item) return null;
-  const href = item.slug === host.slug && host.is_home ? `${origin}/?src=embed` : `${origin}/${item.slug}?src=embed${item.slug !== host.slug ? `&ref=${host.id}` : ""}`;
+  // Every click lands on the sharing Host's page; a guest slide is pinned to its first guest slot.
+  // Sponsor slides open the sponsor's own page.
+  const base = publicOrigin(origin || window.location.origin);
+  const href = item.campaignId
+    ? `${base}/${item.slug}?src=embed`
+    : `${base}/${host.is_home ? "" : host.slug}?src=embed${item.key !== host.id ? `&ref=${item.key}` : ""}`;
 
   return (
     <main className="min-h-screen bg-transparent p-0">
-      <a ref={ref} href={href} target="_blank" rel="noopener" className="press block" aria-label={`${item.name} on Hostme`}>
-        <Frame169 key={item.key} src={item.image} alt={item.name} className="hm-fade-in rounded-xl">
-          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-overlay px-2 py-0.5 text-xs font-semibold text-overlay-foreground backdrop-blur">
-            <Eye className="h-3.5 w-3.5" />
-            {compact(item.views)}
-          </span>
-          <span className="absolute right-2 top-2 rounded-full bg-overlay px-2 py-0.5 font-display text-xs font-bold text-overlay-foreground backdrop-blur">
-            Host<span className="text-gold">me</span>
-          </span>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-overlay to-transparent px-3 pb-2 pt-6">
-            <p className="truncate text-sm font-semibold text-overlay-foreground">{item.name}</p>
-          </div>
-          {slides.length > 1 && (
-            <div className="absolute bottom-2 right-3 flex gap-1">
-              {slides.map((s, i) => (
-                <span key={s.key} className={`h-1.5 w-1.5 rounded-full ${i === index ? "bg-gold" : "bg-overlay-foreground/40"}`} />
-              ))}
-            </div>
-          )}
-        </Frame169>
+      <a ref={ref} href={href} target="_blank" rel="noopener" className="press block" aria-label={`${host.name} on Hostme`}>
+        <Frame169 key={item.key} src={item.image} alt={item.name} className="hm-fade-in rounded-xl" />
       </a>
     </main>
   );
