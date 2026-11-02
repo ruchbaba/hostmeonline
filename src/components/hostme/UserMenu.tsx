@@ -138,7 +138,8 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
     queryKey: ["static-pages-menu"],
     enabled: staticOpen,
     queryFn: async () => {
-      const { data } = await supabase.from("static_pages").select("key, slug, title").order("sort");
+      // Personal pages that come with each Host page are reached from their banner, not from this menu.
+      const { data } = await supabase.from("static_pages").select("key, slug, title").is("host_id", null).order("sort");
       return data ?? [];
     },
   });
@@ -223,17 +224,26 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
             <FileText className="h-4 w-4" /> Static Pages
             <ChevronDown className={cn("ml-auto h-4 w-4 transition-transform", staticOpen && "rotate-180")} />
           </button>
+
           {staticOpen &&
             (staticPages.data ?? STATIC_PAGES.map((p) => ({ key: p.key, slug: p.key, title: p.title }))).map((p) => (
-              <Link
-                key={p.key}
-                to="/$slug"
-                params={{ slug: p.slug }}
-                onClick={close}
-                className="press block rounded-md py-1.5 pl-10 pr-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                {p.title}
-              </Link>
+              <div key={p.key} className="flex items-center rounded-md hover:bg-accent">
+                <Link
+                  to="/$slug"
+                  params={{ slug: p.slug }}
+                  onClick={close}
+                  className="press min-w-0 flex-1 truncate py-1.5 pl-10 pr-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {p.title}
+                </Link>
+                <button
+                  onClick={() => void deletePage(p.key, p.title)}
+                  className="press rounded-md p-1.5 text-muted-foreground hover:text-destructive"
+                  aria-label={`Delete ${p.title}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
             ))}
           <Link
             to="/payouts"

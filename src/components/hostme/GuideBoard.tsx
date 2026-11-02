@@ -89,8 +89,8 @@ export function GuideBoard({ pageKey }: { pageKey: string }) {
             placeholder="Share a tip, a story or a question…"
           />
           <div className="flex items-center justify-between">
-            <p className="text-[11px] tabular-nums text-muted-foreground">
-              {body.length}/{MAX}
+            <p className="text-[11px] text-muted-foreground">
+              Your new post replaces your last one. <span className="tabular-nums">{body.length}/{MAX}</span>
             </p>
             <Button variant="gold" size="sm" disabled={busy || !body.trim()} onClick={() => void post()} aria-label="Post">
               <Send /> Post
