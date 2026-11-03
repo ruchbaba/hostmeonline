@@ -78,6 +78,13 @@
       "when": 1793588923607,
       "tag": "0010_board_one_post_per_account",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793673273011,
+      "tag": "0011_near_me_locations",
+      "breakpoints": true
     }
   ]
 }

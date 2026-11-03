@@ -246,6 +246,44 @@ export type Database = {
           },
         ]
       }
+      host_locations: {
+        Row: {
+          city: string
+          country: string
+          host_id: string
+          lat: number
+          lng: number
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string
+          country?: string
+          host_id: string
+          lat: number
+          lng: number
+          region?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          host_id?: string
+          lat?: number
+          lng?: number
+          region?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "host_locations_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: true
+            referencedRelation: "hosts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hosts: {
         Row: {
           auto_spy_guests: boolean
@@ -719,6 +757,7 @@ export type Database = {
       }
       claim_gift: { Args: { p_host: string }; Returns: string }
       claim_signup: { Args: never; Returns: string }
+      clear_host_location: { Args: { p_host: string }; Returns: undefined }
       create_host: {
         Args: { p_destination: string; p_image_url: string; p_name: string }
         Returns: string
@@ -736,6 +775,49 @@ export type Database = {
           p_min_stars: number
           p_min_views: number
           p_offset: number
+          p_seed: string
+        }
+        Returns: {
+          auto_spy_guests: boolean
+          created_at: string
+          destination_url: string | null
+          entries: number
+          extra_slots: number
+          id: string
+          image_url: string
+          is_extra: boolean
+          is_home: boolean
+          name: string
+          owner_id: string | null
+          rent_enabled: boolean
+          slug: string
+          sparkles: number
+          spies_count: number
+          stars: number
+          tags: string[]
+          updated_at: string
+          views: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "hosts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      discover_hosts_near: {
+        Args: {
+          p_city: string
+          p_country: string
+          p_lat: number
+          p_limit: number
+          p_lng: number
+          p_min_entries: number
+          p_min_stars: number
+          p_min_views: number
+          p_offset: number
+          p_region: string
+          p_scope: string
           p_seed: string
         }
         Returns: {
@@ -794,6 +876,18 @@ export type Database = {
           tags: string[]
           views: number
         }[]
+      }
+      host_in_range: {
+        Args: {
+          p_city: string
+          p_country: string
+          p_host: string
+          p_lat: number
+          p_lng: number
+          p_region: string
+          p_scope: string
+        }
+        Returns: boolean
       }
       host_invitations: {
         Args: { p_host: string }
@@ -882,6 +976,50 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      search_hosts_near: {
+        Args: {
+          p_city: string
+          p_country: string
+          p_lat: number
+          p_limit: number
+          p_lng: number
+          p_min_entries: number
+          p_min_stars: number
+          p_min_views: number
+          p_offset: number
+          p_q: string
+          p_region: string
+          p_scope: string
+          p_terms: string[]
+        }
+        Returns: {
+          auto_spy_guests: boolean
+          created_at: string
+          destination_url: string | null
+          entries: number
+          extra_slots: number
+          id: string
+          image_url: string
+          is_extra: boolean
+          is_home: boolean
+          name: string
+          owner_id: string | null
+          rent_enabled: boolean
+          slug: string
+          sparkles: number
+          spies_count: number
+          stars: number
+          tags: string[]
+          updated_at: string
+          views: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "hosts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       send_invite: { Args: { p_from: string; p_to: string }; Returns: string }
       send_message: {
         Args: {
@@ -895,6 +1033,17 @@ export type Database = {
       send_message_anon: {
         Args: { p_body: string; p_email: string; p_to_host: string }
         Returns: string
+      }
+      set_host_location: {
+        Args: {
+          p_city: string
+          p_country: string
+          p_host: string
+          p_lat: number
+          p_lng: number
+          p_region: string
+        }
+        Returns: undefined
       }
       spy_on: { Args: { p_email: string; p_host: string }; Returns: string }
       start_signup: {
