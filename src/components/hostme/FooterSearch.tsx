@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { DoorOpen, Eye, Loader2, Search, SlidersHorizontal, Star } from "lucide-react";
+import { DoorOpen, Eye, Loader2, MapPin, Search, SlidersHorizontal, Star } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
@@ -10,6 +11,8 @@ import { FEED_GROUP, feedSlotIsSponsor, sponsorSlotsPerGroup } from "@/lib/slots
 import { expandTerms } from "@/lib/tags";
 import { compact } from "@/lib/format";
 import { SEARCH_EVENT } from "@/lib/prefs";
+import { currentPlace, NEAR_SCOPES, type NearScope, type Place } from "@/lib/location";
+import { cn } from "@/lib/utils";
 import { HostCard } from "./Banner";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -36,6 +39,9 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>({ views: 0, stars: 0, entries: 0 });
   const [filterOpen, setFilterOpen] = useState(false);
+  const [scope, setScope] = useState<NearScope>("all");
+  const [place, setPlace] = useState<Place | null>(null);
+  const [locating, setLocating] = useState(false);
   const [seed] = useState(() => Math.random().toString(36).slice(2));
   const rootRef = useRef<HTMLElement>(null);
 
@@ -71,34 +77,39 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
   const terms = useMemo(() => expandTerms(query), [query]);
   const sponsorTags = query ? terms : contextTags;
   const exclude = excludeIds.join(",");
+  const near = scope !== "all" && place ? { p_scope: scope, p_lat: place.lat, p_lng: place.lng, p_city: place.city, p_region: place.region, p_country: place.country } : null;
+
+  const pickScope = async (v: NearScope) => {
+    if (v === "all") return setScope("all");
+    if (place) return setScope(v);
+    setLocating(true);
+    try {
+      setPlace(await currentPlace());
+      setScope(v);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not get your location");
+    } finally {
+      setLocating(false);
+    }
+  };
 
   const feed = useInfiniteQuery({
-    queryKey: ["feed", query, terms.join(","), filters, seed, sponsorTags.join(","), exclude],
+    queryKey: ["feed", query, terms.join(","), filters, seed, sponsorTags.join(","), exclude, near],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
       const offset = pageParam as number;
+      const base = { p_min_views: filters.views, p_min_stars: filters.stars, p_min_entries: filters.entries, p_limit: FEED_GROUP, p_offset: offset };
       const hostsRes = query
-        ? await supabase.rpc("search_hosts", {
-            p_q: query,
-            p_terms: terms,
-            p_min_views: filters.views,
-            p_min_stars: filters.stars,
-            p_min_entries: filters.entries,
-            p_limit: FEED_GROUP,
-            p_offset: offset,
-          })
-        : await supabase.rpc("discover_hosts", {
-            p_seed: seed,
-            p_min_views: filters.views,
-            p_min_stars: filters.stars,
-            p_min_entries: filters.entries,
-            p_limit: FEED_GROUP,
-            p_offset: offset,
-          });
+        ? near
+          ? await supabase.rpc("search_hosts_near", { p_q: query, p_terms: terms, ...base, ...near })
+          : await supabase.rpc("search_hosts", { p_q: query, p_terms: terms, ...base })
+        : near
+          ? await supabase.rpc("discover_hosts_near", { p_seed: seed, ...base, ...near })
+          : await supabase.rpc("discover_hosts", { p_seed: seed, ...base });
       let hosts = ((hostsRes.data ?? []) as Host[]).filter((h) => !excludeIds.includes(h.id));
       // Pre-search suggestions never run out: once every host was shown, start a fresh shuffled round
       // so each scroll always brings a full group of FEED_GROUP cards.
-      if (!query && hosts.length < FEED_GROUP) {
+      if (!query && !near && hosts.length < FEED_GROUP) {
         const again = await supabase.rpc("discover_hosts", {
           p_seed: `${seed}-${offset}`,
           p_min_views: filters.views,
@@ -126,7 +137,7 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
         }
       }
       const fetched = (hostsRes.data ?? []).length;
-      if (!query) return { cards, next: cards.length ? offset + FEED_GROUP : null };
+      if (!query && !near) return { cards, next: cards.length ? offset + FEED_GROUP : null };
       return { cards, next: fetched < FEED_GROUP && hi >= hosts.length ? null : offset + Math.max(1, hi) };
     },
     getNextPageParam: (last) => last.next,
@@ -137,26 +148,39 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
   const sentinel = useRef<HTMLDivElement>(null);
   const feedRef = useRef(feed);
   feedRef.current = feed;
+  // After each group loads, the feed waits at the bottom (slogan + Sun/Moon reachable) until the
+  // user starts a NEW scroll gesture; momentum from the previous scroll never loads the next group.
   useEffect(() => {
-    let last = 0;
-    const check = () => {
-      const el = sentinel.current;
-      const f = feedRef.current;
-      if (!el || !f.hasNextPage || f.isFetchingNextPage) return;
-      if (el.getBoundingClientRect().top < window.innerHeight + 400) void f.fetchNextPage();
-    };
+    let lastEvent = 0;
+    let armed = true;
+    let wasFetching = false;
     const onScroll = () => {
       const now = Date.now();
-      if (now - last < 150) return;
-      last = now;
-      check();
+      const gap = now - lastEvent;
+      lastEvent = now;
+      const el = sentinel.current;
+      const f = feedRef.current;
+      if (f.isFetchingNextPage || f.isFetching) {
+        wasFetching = true;
+        return;
+      }
+      if (wasFetching) {
+        wasFetching = false;
+        armed = false;
+      }
+      if (!armed && gap > 600) armed = true;
+      if (!armed || !el || !f.hasNextPage) return;
+      if (el.getBoundingClientRect().top < window.innerHeight - 24) {
+        armed = false;
+        void f.fetchNextPage();
+      }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const cards = (feed.data?.pages ?? []).flatMap((p) => p.cards);
-  const hasFilters = filters.views + filters.stars + filters.entries > 0;
+  const hasFilters = filters.views + filters.stars + filters.entries > 0 || scope !== "all";
 
   return (
     <footer ref={rootRef} className="space-y-4 pb-16 pt-4">
@@ -234,6 +258,12 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
                 <span className="inline-flex items-center gap-1">
                   <DoorOpen className="h-3.5 w-3.5" />≥{compact(filters.entries)}
                 </span>
+                {scope !== "all" && (
+                  <span className="inline-flex items-center gap-1 text-gold">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {NEAR_SCOPES.find((n) => n.value === scope)?.label}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -275,8 +305,40 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
           <FilterSlider icon={<Eye />} label="Minimum views" max={10000} step={50} value={filters.views} onChange={(v) => setFilters((f) => ({ ...f, views: v }))} />
           <FilterSlider icon={<Star />} label="Minimum stars" max={1000} step={5} value={filters.stars} onChange={(v) => setFilters((f) => ({ ...f, stars: v }))} />
           <FilterSlider icon={<DoorOpen />} label="Minimum entries" max={1000} step={5} value={filters.entries} onChange={(v) => setFilters((f) => ({ ...f, entries: v }))} />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="inline-flex items-center gap-2">
+                <MapPin className="h-4 w-4" /> Near me
+              </span>
+              {locating && <Loader2 className="h-4 w-4 animate-spin text-gold" />}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {NEAR_SCOPES.map((n) => (
+                <button
+                  key={n.value}
+                  type="button"
+                  disabled={locating}
+                  aria-pressed={scope === n.value}
+                  onClick={() => void pickScope(n.value)}
+                  className={cn(
+                    "press rounded-full border px-3 py-1 text-xs",
+                    scope === n.value ? "border-gold bg-gold-soft text-gold" : "text-muted-foreground hover:border-gold/40",
+                  )}
+                >
+                  {n.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setFilters({ views: 0, stars: 0, entries: 0 })}>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setFilters({ views: 0, stars: 0, entries: 0 });
+                setScope("all");
+              }}
+            >
               Reset
             </Button>
             <Button variant="gold" className="flex-1" onClick={() => setFilterOpen(false)}>
