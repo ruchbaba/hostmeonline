@@ -134,6 +134,7 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
   const goStart = useGoStart();
   const [buyOpen, setBuyOpen] = useState(false);
   const [staticOpen, setStaticOpen] = useState(false);
+  const [hostsOpen, setHostsOpen] = useState(false);
   const staticPages = useQuery({
     queryKey: ["static-pages-menu"],
     enabled: staticOpen,
@@ -193,12 +194,15 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
   });
 
   const top = orderedHosts[0];
+  // More than 8 pages: the rest fold into a dropdown opened from the first page's row.
+  const collapsible = orderedHosts.length > 8;
+  const shownHosts = collapsible && !hostsOpen ? orderedHosts.slice(0, 1) : orderedHosts;
   const locked = multi && prefs.lockedHostId === top?.id;
 
   return (
     <div className="space-y-1">
-      {orderedHosts.map((h, i) => (
-        <div key={h.id} className={cn("flex items-center gap-1 rounded-md", i === 0 && "bg-accent/60")}>
+      {shownHosts.map((h, i) => (
+        <div key={h.id} className={cn("flex items-center gap-1 rounded-md", i === 0 && "bg-accent/60", i > 0 && collapsible && "pl-3")}>
           <button onClick={() => openHost(h)} className="press min-w-0 flex-1 truncate px-3 py-2 text-left text-sm font-medium">
             {h.is_home ? "Hostme (home)" : h.name}
           </button>
@@ -214,6 +218,16 @@ function LoggedIn({ unread, close }: { unread: number; close: () => void }) {
               title={locked ? "Locked: this page stays your owner view" : "Lock this page as your owner view"}
             >
               {locked ? <Lock className="h-4 w-4" /> : <LockOpen className="h-4 w-4" />}
+            </button>
+          )}
+          {i === 0 && collapsible && (
+            <button
+              onClick={() => setHostsOpen((v) => !v)}
+              className="press rounded-md p-1.5 text-muted-foreground"
+              aria-label={hostsOpen ? "Hide my other pages" : `Show my other ${orderedHosts.length - 1} pages`}
+              aria-expanded={hostsOpen}
+            >
+              <ChevronDown className={cn("h-4 w-4 transition-transform", hostsOpen && "rotate-180")} />
             </button>
           )}
           {i === 0 && (
