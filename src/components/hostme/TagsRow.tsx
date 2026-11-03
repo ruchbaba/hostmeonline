@@ -131,7 +131,7 @@ export function TagsRow({ host, isOwner }: { host: Host; isOwner: boolean }) {
     <div className="space-y-2">
       <h1 className="font-display text-2xl font-bold leading-tight">{host.name}</h1>
       <div className="flex flex-wrap items-center gap-1.5">
-        {isOwner && <LocationDot host={host} />}
+        {isOwner && !host.is_home && <LocationDot host={host} />}
         {host.tags.map((t) => (
           <span key={t} className="inline-flex items-center gap-1 rounded-full border bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
             #{t}
