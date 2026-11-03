@@ -13,6 +13,9 @@ import { FooterSearch } from "./FooterSearch";
 import { StartHostForm } from "./StartHostForm";
 import { BuyPageDialog } from "./UserMenu";
 import { useHostVisit, useLiveHost } from "./HostPageView";
+import { GuestGrid } from "./GuestGrid";
+import { Invitations } from "./Invitations";
+import { TagsRow } from "./TagsRow";
 
 export const HERO_SLOGAN = "Turn visual space into collective momentum. Share slots, exchange audiences.";
 
@@ -55,6 +58,7 @@ export function HomeView({ initial, refId, src }: { initial: Host; refId?: strin
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-3 py-4">
       <HostBanner host={host} isOwner={isOwner} />
+      {isOwner && <TagsRow host={host} isOwner />}
       {!host.image_url && (
         <h1 className="hm-fade-in text-balance text-center font-display text-2xl font-bold leading-tight sm:text-3xl">{HERO_SLOGAN}</h1>
       )}
@@ -73,6 +77,14 @@ export function HomeView({ initial, refId, src }: { initial: Host; refId?: strin
         {/* Owner edits Hostme's own status (text only); visitors see only the rotating live ticker. */}
         {isOwner ? <StatusCard host={host} isOwner /> : <LiveTicker />}
       </section>
+
+      {/* Hostme's own guests are managed by the owner only; visitors never see this grid. */}
+      {isOwner && (
+        <>
+          <GuestGrid host={host} isOwner />
+          <Invitations host={host} />
+        </>
+      )}
 
       <FooterSearch contextTags={host.tags} excludeIds={[host.id]} />
       {user && <BuyPageDialog open={buyOpen} onClose={() => setBuyOpen(false)} onReady={() => setBuyOpen(false)} />}

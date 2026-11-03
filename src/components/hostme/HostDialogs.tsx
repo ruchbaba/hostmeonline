@@ -46,21 +46,24 @@ function invalidateHost(qc: ReturnType<typeof useQueryClient>, host: Host) {
 export function LinkDialog({ host, open, onClose, isOwner }: Base & { isOwner: boolean }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const [editing, setEditing] = useState(false);
   const [url, setUrl] = useState(host.destination_url ?? "");
   const [busy, setBusy] = useState(false);
   const page = useHostPage(host.id, open && isOwner);
   const active = !!page.data?.active;
 
+  const setPageActive = async (next: boolean) => {
+    const { data: slug, error } = await supabase.rpc("ensure_host_page", { p_host: host.id });
+    if (error || !slug) throw new Error("Could not open your webpage");
+    const { error: upErr } = await supabase.from("static_pages").update({ active: next }).eq("host_id", host.id);
+    if (upErr) throw upErr;
+    await qc.invalidateQueries({ queryKey: hostPageKey(host.id) });
+  };
+
   const togglePage = async () => {
     setBusy(true);
     try {
-      const { data: slug, error } = await supabase.rpc("ensure_host_page", { p_host: host.id });
-      if (error || !slug) throw new Error("Could not open your webpage");
-      const { error: upErr } = await supabase.from("static_pages").update({ active: !active }).eq("host_id", host.id);
-      if (upErr) throw upErr;
-      await qc.invalidateQueries({ queryKey: hostPageKey(host.id) });
-      toast.success(active ? "Your own link is used again" : "Your given webpage is now your banner's link");
+      await setPageActive(!active);
+      toast.success(active ? "Your own link is used again" : "Your webpage is now your banner's link");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not update");
     } finally {
@@ -76,70 +79,81 @@ export function LinkDialog({ host, open, onClose, isOwner }: Base & { isOwner: b
     navigate({ to: "/$slug", params: { slug } });
   };
 
+  const saveLink = async () => {
+    setBusy(true);
+    try {
+      const next = normalizeUrl(url) || null;
+      const { error } = await supabase.from("hosts").update({ destination_url: next }).eq("id", host.id);
+      if (error) throw error;
+      // Saving your own link makes it the banner's link again.
+      if (next && active) await setPageActive(false);
+      await invalidateHost(qc, host);
+      toast.success("Link saved");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="font-display">Visit my Webpage</DialogTitle>
         </DialogHeader>
-        {isOwner && (
-          <div className="space-y-2">
-            <button
-              type="button"
-              disabled={busy}
-              aria-pressed={active}
-              onClick={() => void togglePage()}
-              className={cn(
-                "press flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors",
-                active ? "border-gold bg-gold-soft text-gold" : "border-border text-muted-foreground hover:border-gold/40",
-              )}
-            >
-              <FileText className="h-5 w-5 shrink-0" />
-              <span className="flex-1 leading-snug">
-                <b className={cn("block", active ? "text-gold" : "text-foreground")}>Set an external link to your banner</b>
-                Activate your given webpage or set up your own link
-              </span>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className={cn("h-3 w-3 shrink-0 rounded-full", active ? "bg-gold" : "bg-muted")} />}
-            </button>
-            <Button variant="outline" className="w-full" onClick={() => void openPage()}>
-              <FileText /> {page.data ? "Open my webpage" : "Create my webpage"}
-            </Button>
-          </div>
-        )}
-        {host.destination_url && !active && (
-          <Button asChild variant="gold">
-            <a href={host.destination_url} target="_blank" rel="noopener noreferrer">
-              <Globe /> Visit my Webpage
-            </a>
-          </Button>
-        )}
-        {isOwner &&
-          !active &&
-          (editing ? (
+        {isOwner ? (
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                aria-pressed={active}
+                onClick={() => void togglePage()}
+                className={cn(
+                  "press flex min-w-0 flex-1 items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors",
+                  active ? "border-gold bg-gold-soft text-gold" : "border-border text-foreground hover:border-gold/40",
+                )}
+              >
+                <FileText className="h-5 w-5 shrink-0" />
+                <span className="flex-1 truncate">Visit my Webpage</span>
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className={cn("h-3 w-3 shrink-0 rounded-full", active ? "bg-gold" : "bg-muted")} />}
+              </button>
+              <Button variant="outline" size="icon" className="h-auto w-12 rounded-xl" onClick={() => void openPage()} aria-label="Open my webpage">
+                <Pencil />
+              </Button>
+            </div>
             <form
-              className="flex gap-2"
-              onSubmit={async (e) => {
+              className={cn("flex gap-2", active && "opacity-60")}
+              onSubmit={(e) => {
                 e.preventDefault();
-                const { error } = await supabase
-                  .from("hosts")
-                  .update({ destination_url: normalizeUrl(url) || null })
-                  .eq("id", host.id);
-                if (error) return toast.error(error.message);
-                await invalidateHost(qc, host);
-                setEditing(false);
-                toast.success("Link saved");
+                void saveLink();
               }}
             >
-              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://your-site.com" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
-              <Button type="submit" size="icon" aria-label="Save link">
+              <Input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://your-own-link.com"
+                aria-label="My own link"
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+              <Button type="submit" size="icon" disabled={busy} aria-label="Save my own link">
                 <Check />
               </Button>
             </form>
-          ) : (
-            <Button variant="outline" onClick={() => setEditing(true)}>
-              <Pencil /> {host.destination_url ? "Edit my own link" : "Set up my own link"}
+          </div>
+        ) : (
+          host.destination_url && (
+            <Button asChild variant="gold">
+              <a href={host.destination_url} target="_blank" rel="noopener noreferrer">
+                <Globe /> Visit my Webpage
+              </a>
             </Button>
-          ))}
+          )
+        )}
       </DialogContent>
     </Dialog>
   );
