@@ -42,7 +42,7 @@ export function StatsTicker() {
   );
   // Sliding news-style band: the same line repeats so the loop never shows a gap.
   return (
-    <div className="overflow-hidden rounded-lg border bg-card py-3 shadow-sm" role="status" aria-label={`Total Entry Ports Shared: ${entries}. Total Creator Earnings Paid: ${earnings}`}>
+    <div className="overflow-hidden rounded-lg border bg-ticker py-3 shadow-sm" role="status" aria-label={`Total Entry Ports Shared: ${entries}. Total Creator Earnings Paid: ${earnings}`}>
       <div className="hm-marquee flex w-max whitespace-nowrap font-display text-sm font-bold uppercase tracking-[0.18em] text-foreground sm:text-base">
         {[0, 1, 2, 3].map(item)}
       </div>
