@@ -151,32 +151,53 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
   // After each group loads, the feed waits at the bottom (slogan + Sun/Moon reachable) until the
   // user starts a NEW scroll gesture; momentum from the previous scroll never loads the next group.
   useEffect(() => {
-    let lastEvent = 0;
+    let lastInput = 0;
     let armed = true;
+    let loadedAt = 0;
     let wasFetching = false;
-    const onScroll = () => {
-      const now = Date.now();
-      const gap = now - lastEvent;
-      lastEvent = now;
-      const el = sentinel.current;
-      const f = feedRef.current;
-      if (f.isFetchingNextPage || f.isFetching) {
-        wasFetching = true;
-        return;
-      }
-      if (wasFetching) {
+    const fetching = () => feedRef.current.isFetchingNextPage || feedRef.current.isFetching;
+    const settle = () => {
+      if (fetching()) wasFetching = true;
+      else if (wasFetching) {
         wasFetching = false;
         armed = false;
+        loadedAt = Date.now();
       }
-      if (!armed && gap > 600) armed = true;
-      if (!armed || !el || !f.hasNextPage) return;
+    };
+    // Any input (wheel, finger drag, scroll) counts as the same gesture until it pauses for 600ms.
+    const onInput = () => {
+      settle();
+      const now = Date.now();
+      if (!armed && !fetching() && now - lastInput > 600 && now - loadedAt > 300) armed = true;
+      lastInput = now;
+    };
+    // Lifting the finger and touching again is always a new gesture.
+    const onTouchStart = () => {
+      settle();
+      if (!fetching()) armed = true;
+      lastInput = Date.now();
+    };
+    const onScroll = () => {
+      onInput();
+      const el = sentinel.current;
+      const f = feedRef.current;
+      if (!armed || fetching() || !el || !f.hasNextPage) return;
       if (el.getBoundingClientRect().top < window.innerHeight - 24) {
         armed = false;
+        wasFetching = true;
         void f.fetchNextPage();
       }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("wheel", onInput, { passive: true });
+    window.addEventListener("touchmove", onInput, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("wheel", onInput);
+      window.removeEventListener("touchmove", onInput);
+      window.removeEventListener("touchstart", onTouchStart);
+    };
   }, []);
 
   const cards = (feed.data?.pages ?? []).flatMap((p) => p.cards);
