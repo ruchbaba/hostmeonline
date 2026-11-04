@@ -28,12 +28,25 @@ export function StatsTicker() {
     },
     refetchInterval: 10000,
   });
+  const entries = compact(Number(q.data?.entries ?? 0));
+  const earnings = usd(Number(q.data?.earnings ?? 0));
+  const item = (k: number) => (
+    <span key={k} className="flex shrink-0 items-center gap-10 pr-10" aria-hidden={k > 0}>
+      <span>
+        Total Entry Ports Shared: <b className="tabular-nums">{entries}</b>
+      </span>
+      <span className="text-gold">
+        Total Creator Earnings Paid: <b className="tabular-nums">{earnings}</b>
+      </span>
+    </span>
+  );
+  // Sliding news-style band: the same line repeats so the loop never shows a gap.
   return (
-    <p className="text-center text-xs tracking-wide text-muted-foreground sm:text-sm">
-      Total Entry Ports Shared: <b className="tabular-nums text-foreground">{compact(Number(q.data?.entries ?? 0))}</b>
-      <span className="mx-2 text-gold">|</span>
-      Total Creator Earnings Paid: <b className="tabular-nums text-gold">{usd(Number(q.data?.earnings ?? 0))}</b>
-    </p>
+    <div className="overflow-hidden rounded-lg border bg-ticker py-3 shadow-sm" role="status" aria-label={`Total Entry Ports Shared: ${entries}. Total Creator Earnings Paid: ${earnings}`}>
+      <div className="hm-marquee flex w-max whitespace-nowrap font-display text-sm font-bold uppercase tracking-[0.18em] text-foreground sm:text-base">
+        {[0, 1, 2, 3].map(item)}
+      </div>
+    </div>
   );
 }
 
