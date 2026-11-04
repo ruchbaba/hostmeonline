@@ -38,12 +38,12 @@
 - [x] Re-read attachments and close any gaps
 
 ## Batch (Nov 3)
-- [ ] Homepage guest grid: hidden for visitors only, owner still sees it
-- [ ] Top-right menu: more than 8 Host pages -> dropdown on first page (icon between lock and +)
-- [ ] Link popup: remove explanations; "Visit my Webpage" toggle + own link only
-- [ ] Footer suggestions: wait for a second scroll before loading more
-- [ ] Near me: red/green location dot before tags, permission popup, search distance range (5/10/100 km, city, state, country, all)
-- [ ] Recheck everything and publish
+- [x] Homepage guest grid: hidden for visitors only, owner still sees it
+- [x] Top-right menu: more than 8 Host pages -> dropdown on first page (icon between lock and +)
+- [x] Link popup: remove explanations; "Visit my Webpage" toggle + own link only
+- [x] Footer suggestions: wait for a second scroll before loading more
+- [x] Near me: red/green location dot before tags, permission popup, search distance range (5/10/100 km, city, state, country, all)
+- [x] Recheck everything and publish
 
 ## Deferred
 - [ ] Real email delivery for message + Spy alerts — coming soon (user deferred)
