@@ -204,3 +204,22 @@ html.light {
 .hm-fade-in {
   animation: hm-fade-in 600ms ease both;
 }
+
+@keyframes hm-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.hm-marquee {
+  animation: hm-marquee 22s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-marquee {
+    animation-duration: 60s;
+  }
+}
