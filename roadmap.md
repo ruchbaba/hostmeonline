@@ -43,7 +43,9 @@
 - [x] Link popup: remove explanations; "Visit my Webpage" toggle + own link only
 - [x] Footer suggestions: wait for a second scroll before loading more
 - [x] Near me: red/green location dot before tags, permission popup, search distance range (5/10/100 km, city, state, country, all)
-- [x] Recheck everything and publish
+- [x] Recheck everything
+- [ ] Homepage counters slide across like a news ticker (white background in bright mode)
+- [ ] Publish
 
 ## Deferred
 - [ ] Real email delivery for message + Spy alerts — coming soon (user deferred)
