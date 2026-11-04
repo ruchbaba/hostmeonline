@@ -46,7 +46,7 @@
 - [x] Recheck everything
 - [x] Footer search bar stays at the page bottom without covering content; more banners load only on a second scroll once at the bottom
 - [x] Homepage counters slide across like a news ticker (white background in bright mode)
-- [ ] Publish
+- [x] Publish
 
 ## Deferred
 - [ ] Real email delivery for message + Spy alerts — coming soon (user deferred)
