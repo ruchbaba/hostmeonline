@@ -145,7 +145,6 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
 
   // Load more only while the user is actively scrolling, so the slogan and
   // theme toggle stay reachable when they stop.
-  const sentinel = useRef<HTMLDivElement>(null);
   const feedRef = useRef(feed);
   feedRef.current = feed;
   // Infinite feed rule: the first scroll only brings you to the very bottom (slogan + Sun/Moon
@@ -157,9 +156,9 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
     let bottomGesture = -1; // gesture during which the bottom was first reached
     const atBottom = () => window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 8;
     const busy = () => feedRef.current.isFetching || feedRef.current.isFetchingNextPage;
-    const step = (newGesture: boolean) => {
+    const step = () => {
       const now = Date.now();
-      if (newGesture || now - lastInput > 600) gesture++;
+      if (now - lastInput > 600) gesture++;
       lastInput = now;
       const f = feedRef.current;
       if (busy() || !f.hasNextPage) return;
@@ -176,10 +175,14 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
         void f.fetchNextPage();
       }
     };
-    const onScroll = () => step(false);
-    const onWheel = (e: WheelEvent) => e.deltaY > 0 && step(false);
-    const onTouchStart = () => step(true);
-    const onTouchMove = () => step(false);
+    const onScroll = () => step();
+    const onWheel = (e: WheelEvent) => e.deltaY > 0 && step();
+    // A new touch starts a new gesture but never loads by itself (tapping Sun/Moon stays safe).
+    const onTouchStart = () => {
+      gesture++;
+      lastInput = Date.now();
+    };
+    const onTouchMove = () => step();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("wheel", onWheel, { passive: true });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
@@ -196,7 +199,7 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
   const hasFilters = filters.views + filters.stars + filters.entries > 0 || scope !== "all";
 
   return (
-    <footer ref={rootRef} className="space-y-4 pb-16 pt-4">
+    <footer ref={rootRef} className="relative space-y-4 pb-[calc(3rem+env(safe-area-inset-bottom))] pt-4">
       <div className="flex flex-col items-center gap-3">
         {!open ? (
           <button
@@ -304,7 +307,6 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
       {feed.isSuccess && cards.length === 0 && (
         <p className="text-center text-sm text-muted-foreground">{query ? "No matching hosts yet." : "New hosts will appear here."}</p>
       )}
-      <div ref={sentinel} className="h-1" />
       <div className="flex justify-center pt-6">
         <ThemeToggle />
       </div>
