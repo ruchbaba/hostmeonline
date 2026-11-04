@@ -148,55 +148,47 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
   const sentinel = useRef<HTMLDivElement>(null);
   const feedRef = useRef(feed);
   feedRef.current = feed;
-  // After each group loads, the feed waits at the bottom (slogan + Sun/Moon reachable) until the
-  // user starts a NEW scroll gesture; momentum from the previous scroll never loads the next group.
+  // Infinite feed rule: the first scroll only brings you to the very bottom (slogan + Sun/Moon
+  // stay readable and tappable). A SECOND, separate scroll made while already at the bottom loads
+  // the next group. A gesture ends after a 600ms pause or when the finger is lifted and touches again.
   useEffect(() => {
     let lastInput = 0;
-    let armed = true;
-    let loadedAt = 0;
-    let wasFetching = false;
-    const fetching = () => feedRef.current.isFetchingNextPage || feedRef.current.isFetching;
-    const settle = () => {
-      if (fetching()) wasFetching = true;
-      else if (wasFetching) {
-        wasFetching = false;
-        armed = false;
-        loadedAt = Date.now();
-      }
-    };
-    // Any input (wheel, finger drag, scroll) counts as the same gesture until it pauses for 600ms.
-    const onInput = () => {
-      settle();
+    let gesture = 0;
+    let bottomGesture = -1; // gesture during which the bottom was first reached
+    const atBottom = () => window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 8;
+    const busy = () => feedRef.current.isFetching || feedRef.current.isFetchingNextPage;
+    const step = (newGesture: boolean) => {
       const now = Date.now();
-      if (!armed && !fetching() && now - lastInput > 600 && now - loadedAt > 300) armed = true;
+      if (newGesture || now - lastInput > 600) gesture++;
       lastInput = now;
-    };
-    // Lifting the finger and touching again is always a new gesture.
-    const onTouchStart = () => {
-      settle();
-      if (!fetching()) armed = true;
-      lastInput = Date.now();
-    };
-    const onScroll = () => {
-      onInput();
-      const el = sentinel.current;
       const f = feedRef.current;
-      if (!armed || fetching() || !el || !f.hasNextPage) return;
-      if (el.getBoundingClientRect().top < window.innerHeight - 24) {
-        armed = false;
-        wasFetching = true;
+      if (busy() || !f.hasNextPage) return;
+      if (!atBottom()) {
+        bottomGesture = -1;
+        return;
+      }
+      if (bottomGesture < 0) {
+        bottomGesture = gesture;
+        return;
+      }
+      if (gesture > bottomGesture) {
+        bottomGesture = -1;
         void f.fetchNextPage();
       }
     };
+    const onScroll = () => step(false);
+    const onWheel = (e: WheelEvent) => e.deltaY > 0 && step(false);
+    const onTouchStart = () => step(true);
+    const onTouchMove = () => step(false);
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("wheel", onInput, { passive: true });
-    window.addEventListener("touchmove", onInput, { passive: true });
+    window.addEventListener("wheel", onWheel, { passive: true });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("wheel", onInput);
-      window.removeEventListener("touchmove", onInput);
+      window.removeEventListener("wheel", onWheel);
       window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
     };
   }, []);
 
