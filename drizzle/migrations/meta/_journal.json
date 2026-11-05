@@ -85,6 +85,13 @@
       "when": 1793673273011,
       "tag": "0011_near_me_locations",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793849565020,
+      "tag": "0012_near_me_more_distances",
+      "breakpoints": true
     }
   ]
 }

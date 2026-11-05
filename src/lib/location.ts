@@ -8,13 +8,16 @@ export interface Place {
   country: string;
 }
 
-export type NearScope = "all" | "5" | "10" | "100" | "city" | "state" | "country";
+export type NearScope = "all" | "5" | "10" | "20" | "50" | "100" | "city" | "province" | "state" | "country";
 
 export const NEAR_SCOPES: { value: NearScope; label: string }[] = [
   { value: "5", label: "5 km" },
   { value: "10", label: "10 km" },
+  { value: "20", label: "20 km" },
+  { value: "50", label: "50 km" },
   { value: "100", label: "100 km" },
   { value: "city", label: "City" },
+  { value: "province", label: "Province" },
   { value: "state", label: "State" },
   { value: "country", label: "Country" },
   { value: "all", label: "All" },
