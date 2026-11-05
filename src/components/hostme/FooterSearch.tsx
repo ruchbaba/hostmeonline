@@ -263,8 +263,16 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
                 ))}
               </div>
             )}
-            {hasFilters && (
+            {(
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => setFilterOpen(true)}
+                  className={cn("press inline-flex items-center gap-1 rounded-full border px-2 py-0.5", scope !== "all" ? "border-gold text-gold" : "hover:border-gold/40")}
+                >
+                  <MapPin className="h-3.5 w-3.5" />
+                  {scope !== "all" ? NEAR_SCOPES.find((n) => n.value === scope)?.label : "Near me"}
+                </button>
                 <span className="inline-flex items-center gap-1">
                   <Eye className="h-3.5 w-3.5" />≥{compact(filters.views)}
                 </span>
@@ -274,12 +282,7 @@ export function FooterSearch({ contextTags = [], excludeIds = [] }: { contextTag
                 <span className="inline-flex items-center gap-1">
                   <DoorOpen className="h-3.5 w-3.5" />≥{compact(filters.entries)}
                 </span>
-                {scope !== "all" && (
-                  <span className="inline-flex items-center gap-1 text-gold">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {NEAR_SCOPES.find((n) => n.value === scope)?.label}
-                  </span>
-                )}
+                
               </div>
             )}
           </div>
