@@ -14,7 +14,7 @@ export function useImpression<T extends Element>(onImpression: (() => void) | nu
     const obs = new IntersectionObserver(
       (entries) => {
         const e = entries[0];
-        if (e && e.intersectionRatio >= 0.99) {
+        if (e && e.intersectionRatio >= 0.9) {
           if (!timer)
             timer = setTimeout(() => {
               fired.current = key ?? "1";
@@ -26,7 +26,7 @@ export function useImpression<T extends Element>(onImpression: (() => void) | nu
           timer = null;
         }
       },
-      { threshold: [0, 0.5, 0.99, 1] },
+      { threshold: [0, 0.5, 0.9, 1] },
     );
     obs.observe(el);
     return () => {
