@@ -36,7 +36,7 @@ export function UserMenu() {
           {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-gold" />}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-2">
+      <PopoverContent align="end" className="max-h-[calc(100dvh-4.5rem)] w-80 overflow-y-auto overscroll-contain p-2" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
         {!ready ? null : user ? <LoggedIn unread={unread} close={() => setOpen(false)} /> : <LoggedOut close={() => setOpen(false)} />}
       </PopoverContent>
     </Popover>

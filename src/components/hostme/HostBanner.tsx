@@ -59,7 +59,8 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
   const spying = !isOwner && (user ? !!spyQ.data : !!prefs.spying[host.id]);
   const page = useHostPage(host.id);
   // The gifted personal page, when switched on, replaces the own external link.
-  const pageSlug = page.data?.active ? page.data.slug : null;
+  // On the homepage, visitors always land on the Hostme owner's own page.
+  const pageSlug = page.data?.active || (host.is_home && page.data?.slug) ? (page.data?.slug ?? null) : null;
 
   return (
     <>

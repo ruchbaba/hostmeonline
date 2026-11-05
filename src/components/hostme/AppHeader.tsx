@@ -12,8 +12,8 @@ export function AppHeader() {
             <SponsorMenu />
           </ClientOnly>
         </div>
-        <Link to="/" className="press font-display text-xl font-bold tracking-tight">
-          Host<span className="text-gold">me</span>
+        <Link to="/" className="press font-display text-xl font-bold tracking-tight text-foreground">
+          Hostme
         </Link>
         <div className="justify-self-end">
           <ClientOnly fallback={<span className="inline-block h-9 w-9" />}>

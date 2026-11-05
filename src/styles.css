@@ -218,7 +218,7 @@ html.light {
 }
 
 .hm-marquee {
-  animation: hm-marquee 22s linear infinite;
+  animation: hm-marquee 48s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
