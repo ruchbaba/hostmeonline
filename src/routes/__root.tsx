@@ -50,6 +50,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">This page didn't load</h1>
         <p className="mt-2 text-sm text-muted-foreground">Something went wrong on our end. You can try refreshing or head back home.</p>
+        <pre className="mt-4 max-h-[50vh] overflow-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-3 text-left text-xs text-foreground">
+          {error instanceof Error ? `${error.message}\n\n${error.stack ?? ""}` : String(error)}
+        </pre>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
