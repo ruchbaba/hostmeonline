@@ -70,7 +70,7 @@ export function HomeView({ initial, refId, src }: { initial: Host; refId?: strin
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-3 py-4">
-      <HostBanner host={host} isOwner={isOwner} />
+      <HostBanner host={host} isOwner={isOwner} homeLink={!isOwner} />
       {isOwner && <TagsRow host={host} isOwner />}
       {!host.image_url && (
         <h1 className="hm-fade-in text-balance text-center font-display text-2xl font-bold leading-tight sm:text-3xl">{HERO_SLOGAN}</h1>

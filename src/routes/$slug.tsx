@@ -16,7 +16,7 @@ export const Route = createFileRoute("/$slug")({
   loader: async ({ context, params, deps }) => {
     const res = await context.queryClient.ensureQueryData(slugQuery(params.slug));
     if (res.kind === "none") throw notFound();
-    if (res.kind === "host" && res.host?.is_home) throw redirect({ to: "/", search: { ref: deps.ref, src: deps.src } });
+    // The Hostme home host also has its own full Host page here (with guests); "/" stays the homepage.
     // Old addresses (the page key or a previous link) move to the page's current link.
     if (res.kind === "page" && res.page && res.page.slug !== params.slug) {
       throw redirect({ to: "/$slug", params: { slug: res.page.slug }, search: { ref: deps.ref, src: deps.src }, replace: true });

@@ -57,7 +57,7 @@ export function usePost(hostId: string) {
 }
 
 export const WRITE_MAX = 500;
-const HEAD_CHARS = 90; // about 2-3 lines beside the small banner
+const HEAD_CHARS = 150; // about 3-4 lines beside the 16:9 banner
 
 export function splitBody(body: string): [string, string] {
   if (body.length <= HEAD_CHARS) return [body, ""];
@@ -74,7 +74,7 @@ export function PostBody({ image, name, body, className }: { image: string; name
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex gap-3">
-        <Frame169 src={image} alt={name} className="w-20 shrink-0 rounded-lg sm:w-24" />
+        <Frame169 src={image} alt={name} className="w-32 shrink-0 self-start rounded-lg sm:w-36" />
         <div className="min-w-0">
           <p className="text-xs font-semibold text-gold">{name}</p>
           <p className="whitespace-pre-line text-sm leading-relaxed">{head}</p>

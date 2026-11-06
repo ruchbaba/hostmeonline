@@ -112,7 +112,7 @@ export function GuideBoard({ pageKey }: { pageKey: string }) {
                 <Link
                   to={h.is_home ? "/" : "/$slug"}
                   params={h.is_home ? {} : { slug: h.slug }}
-                  className="press w-20 shrink-0 self-start"
+                  className="press w-32 shrink-0 self-start sm:w-36"
                   aria-label={h.name}
                 >
                   <Frame169 src={h.image_url} alt={h.name} className="rounded-lg" />

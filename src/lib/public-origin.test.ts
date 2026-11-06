@@ -7,8 +7,9 @@ describe("publicOrigin", () => {
     expect(publicOrigin("https://id-preview--8eb811f9-d356-4979-8e43-67e94377fbee.lovable.app")).toBe(PUBLISHED_ORIGIN);
   });
 
-  it("keeps published and custom domains", () => {
-    expect(publicOrigin("https://banner-buddy-exchange.lovable.app")).toBe("https://banner-buddy-exchange.lovable.app");
+  it("sends Lovable and Vercel addresses to hostmeonline.com, keeps other domains", () => {
+    expect(publicOrigin("https://hostmeonline.lovable.app")).toBe("https://hostmeonline.com");
+    expect(publicOrigin("https://hostmeonline.com")).toBe("https://hostmeonline.com");
     expect(publicOrigin("https://hostme.app")).toBe("https://hostme.app");
   });
 });
