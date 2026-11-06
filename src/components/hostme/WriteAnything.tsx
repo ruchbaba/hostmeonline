@@ -57,7 +57,7 @@ export function usePost(hostId: string) {
 }
 
 export const WRITE_MAX = 500;
-const HEAD_CHARS = 90; // about 2-3 lines beside the small banner
+const HEAD_CHARS = 150; // about 3-4 lines beside the 16:9 banner
 
 export function splitBody(body: string): [string, string] {
   if (body.length <= HEAD_CHARS) return [body, ""];
