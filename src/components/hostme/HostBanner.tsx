@@ -34,7 +34,7 @@ function Chip({ className, onClick, children, label, active }: { className?: str
   );
 }
 
-export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) {
+export function HostBanner({ host, isOwner, homeLink }: { host: Host; isOwner: boolean; homeLink?: boolean }) {
   const [open, setOpen] = useState<Open>(null);
   const { user, acting } = useMe();
   const prefs = usePrefs();
@@ -70,6 +70,13 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
             type="button"
             aria-label="Open link"
             onClick={() => setOpen("link")}
+            className="absolute left-1/4 top-1/4 h-1/2 w-1/2 cursor-pointer rounded-xl"
+          />
+        ) : homeLink ? (
+          <Link
+            to="/$slug"
+            params={{ slug: host.slug }}
+            aria-label="Open Hostme page"
             className="absolute left-1/4 top-1/4 h-1/2 w-1/2 cursor-pointer rounded-xl"
           />
         ) : page.isPending ? null : pageSlug ? (
