@@ -51,10 +51,9 @@ function createSupabaseClient() {
   // Fall back to process.env for SSR (server-side rendering)
   // Hardcoded fallbacks (publishable values only) so a missing env var never breaks the app.
   const env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string | undefined>);
-  const SUPABASE_URL: string =
-    import.meta.env['VITE_SUPABASE_URL'] || env['SUPABASE_URL'] || 'https://c--8eb811f9-d356-4979-8e43-67e94377fbee-prod.lovable.cloud';
-  const SUPABASE_PUBLISHABLE_KEY: string =
-    import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || env['SUPABASE_PUBLISHABLE_KEY'] || 'sb_publishable_hntSGdCFmuTPyWXU6626ig_ViuUhz6W';
+  const SUPABASE_URL: string = 'https://c--8eb811f9-d356-4979-8e43-67e94377fbee-prod.lovable.cloud';
+const SUPABASE_PUBLISHABLE_KEY: string = 'sb_publishable_hntSGdCFmuTPyWXU6626ig_ViuUhz6W';
+
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     global: {
