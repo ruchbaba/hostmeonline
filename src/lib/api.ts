@@ -90,7 +90,6 @@ export async function uploadBanner(blob: Blob, folder: string): Promise<string> 
   return data.publicUrl;
 }
 
-
 /** Sends a query now. Supabase query builders are lazy: without await/then no request is made. */
 export async function fire(q: PromiseLike<unknown>): Promise<void> {
   try {
