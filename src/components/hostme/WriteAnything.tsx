@@ -74,7 +74,7 @@ export function PostBody({ image, name, body, className }: { image: string; name
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex gap-3">
-        <Frame169 src={image} alt={name} className="w-28 shrink-0 rounded-lg sm:w-36" />
+        <Frame169 src={image} alt={name} className="w-20 shrink-0 rounded-lg sm:w-24" />
         <div className="min-w-0">
           <p className="text-xs font-semibold text-gold">{name}</p>
           <p className="whitespace-pre-line text-sm leading-relaxed">{head}</p>

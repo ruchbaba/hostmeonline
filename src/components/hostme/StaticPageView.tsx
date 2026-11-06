@@ -156,7 +156,7 @@ export function StaticPageView({ initial }: { initial: StaticPageRow }) {
         </header>
       )}
       <GuideBoard pageKey={page.key} />
-      {!editing && banner(page.banner2_url, page.banner2_link)}
+      {personal ? owner.data && <LiveHostBanner slug={owner.data} /> : !editing && banner(page.banner2_url, page.banner2_link)}
       <FooterSearch />
     </main>
   );

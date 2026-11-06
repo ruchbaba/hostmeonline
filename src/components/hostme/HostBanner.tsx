@@ -59,8 +59,8 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
   const spying = !isOwner && (user ? !!spyQ.data : !!prefs.spying[host.id]);
   const page = useHostPage(host.id);
   // The gifted personal page, when switched on, replaces the own external link.
-  // On the homepage, visitors always land on the Hostme owner's own page.
-  const pageSlug = page.data?.active || (host.is_home && page.data?.slug) ? (page.data?.slug ?? null) : null;
+  // The homepage follows the Hostme owner's own setting (webpage or external link), like any Host page.
+  const pageSlug = page.data?.active ? (page.data?.slug ?? null) : null;
 
   return (
     <>
@@ -104,7 +104,7 @@ export function HostBanner({ host, isOwner }: { host: Host; isOwner: boolean }) 
             <Share2 />
           </Chip>
         ) : (
-          <Chip className="right-3 top-1/2 -translate-y-1/2" label="Invite as Guest" active={rel.data === "partner"} onClick={() => setOpen("invite")}>
+          <Chip className="right-3 top-1/2 -translate-y-1/2" label="Invite as Guest" active={rel.data === "partner" || rel.data === "pending_out" || rel.data === "pending_in"} onClick={() => setOpen("invite")}>
             <UserPlus />
           </Chip>
         )}
