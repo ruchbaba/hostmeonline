@@ -49,18 +49,12 @@ function createSupabaseFetch(supabaseUrl: string, supabaseKey: string): typeof f
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
-
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
-    ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
-  }
+  // Hardcoded fallbacks (publishable values only) so a missing env var never breaks the app.
+  const env = typeof process !== 'undefined' ? process.env : ({} as Record<string, string | undefined>);
+  const SUPABASE_URL: string =
+    import.meta.env['VITE_SUPABASE_URL'] || env['SUPABASE_URL'] || 'https://c--8eb811f9-d356-4979-8e43-67e94377fbee-prod.lovable.cloud';
+  const SUPABASE_PUBLISHABLE_KEY: string =
+    import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || env['SUPABASE_PUBLISHABLE_KEY'] || 'sb_publishable_hntSGdCFmuTPyWXU6626ig_ViuUhz6W';
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     global: {
