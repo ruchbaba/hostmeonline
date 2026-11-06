@@ -20,10 +20,15 @@ export function Frame169({
   imgClassName?: string;
   children?: ReactNode;
 }) {
+  // Convert any legacy proxy URLs directly to Supabase public storage
+  const imageSrc = src?.startsWith("/api/public/img/")
+    ? `https://c--8eb811f9-d356-4979-8e43-67e94377fbee-prod.lovable.cloud/storage/v1/object/public/banners/${src.replace("/api/public/img/", "")}`
+    : src;
+
   return (
     <div className={cn("relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-muted shadow-card", className)}>
       <img
-        src={src || fallback}
+        src={imageSrc || fallback}
         alt={alt}
         loading="lazy"
         draggable={false}
